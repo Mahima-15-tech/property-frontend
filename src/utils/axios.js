@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "https://property-platform.onrender.com",
-});
+    baseURL: import.meta.env.VITE_BASE_URL,
+  });
 
 // 🔥 ADD THIS
 instance.interceptors.request.use((config) => {
