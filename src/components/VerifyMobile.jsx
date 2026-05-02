@@ -69,8 +69,9 @@ export default function VerifyMobile({mobile, setPage}) {
     }
 
     try {
-      const res = await axios.post("/api/auth/resend-otp", {
+      await axios.post("/api/auth/resend-otp", {
         phone: mobile,
+        role: localStorage.getItem("loginType")
       });
   
       // console.log("OTP resent", res);
@@ -97,12 +98,12 @@ export default function VerifyMobile({mobile, setPage}) {
         const res = await axios.post("/api/auth/verify-otp", {
           phone: mobile,
           otp: finalOtp,
-          role: localStorage.getItem("loginType") 
+          role: localStorage.getItem("loginType")   
         });
         
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("role", res.data.role);
-        
+
         // 🔥 ROLE BASED REDIRECT
         if (res.data.role === "broker") {
           navigate("/broker-dashboard");

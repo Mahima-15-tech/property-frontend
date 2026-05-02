@@ -26,9 +26,12 @@ export default function BrokerSignup() {
   const [pan, setPan] = useState("");
   const [rera, setRera] = useState("");
 
+
   const [errors, setErrors] = useState({});
 
   const [success, setSuccess] = useState("");
+
+  
 
   const navigate = useNavigate();
 
@@ -103,11 +106,13 @@ export default function BrokerSignup() {
       const res = await axios.post("/api/brokers/register", formData);
 
 localStorage.setItem("token", res.data.token);
-      setSuccess("Application submitted successfully");
-  
-      setTimeout(() => {
-        navigate("/broker-dashboard");
-      }, 1500);
+localStorage.setItem("role", "broker");  
+
+setSuccess("Application submitted successfully");
+
+setTimeout(() => {
+  navigate("/broker-dashboard");
+}, 1500);
   
     } catch (err) {
       setSuccess("");

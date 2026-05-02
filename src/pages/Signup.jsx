@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-import axios from "axios";
+import axios from "../utils/axios";
 
 import React, { useState, useEffect, useRef } from "react";
 import {
@@ -26,6 +26,10 @@ const Signup = () => {
   const [fullNameErr, setFullNameErr] = useState("");
   const [mobileErr, setMobileErr] = useState("");
   const [agreeErr, setAgreeErr] = useState("");
+
+  useEffect(() => {
+    localStorage.setItem("loginType", "investor");
+  }, []);
 
   // console.log('afrre', agreed)
   const features = [
@@ -61,7 +65,11 @@ const Signup = () => {
     };
 
     try {
-      const res = await axios.post(`${BASE_URL}/api/auth/send-otp`, obj);
+      const res = await axios.post("/api/auth/send-otp", {
+        name: fullName,
+        phone: mobile,
+        role: "investor"
+      });
 
       setPage(1);
     } catch (error) {
