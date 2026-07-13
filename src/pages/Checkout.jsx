@@ -35,7 +35,7 @@ function PropertyCard({property}) {
       <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-sky-400 to-teal-600 flex items-center justify-center">
         {/* <BsGraphUp size={32} className="text-white opacity-70" /> */}
         <img
-          src={property.image || property.media?.images?.[0]}
+         src={property.image || property.images?.[0]}
           alt={property.name}
           className="w-full h-full object-cover"
         />
@@ -132,6 +132,27 @@ function ShareSelector({ shares, setShares, property }) {
   );
 }
 function ReferralCode({ code, setCode, applied, setApplied }) {
+  const [referralError, setReferralError] = useState("");
+  const handleApplyReferral = async () => {
+    try {
+      setReferralError("");
+  
+      const res = await axios.post("/api/investments/validate-referral", {
+        code,
+      });
+  
+      if (res.data.valid) {
+        setApplied(true);
+      } else {
+        setApplied(false);
+        setReferralError("Invalid referral code");
+      }
+  
+    } catch (err) {
+      setApplied(false);
+      setReferralError("Invalid referral code");
+    }
+  };
 
   return (
     <div>
@@ -150,38 +171,41 @@ function ReferralCode({ code, setCode, applied, setApplied }) {
             </div>
           )}
         </div>
-        <button
-          onClick={async () => {
-            try {
-              const res = await axios.post("/api/investments/validate-referral", {
-                code
-              });
-          
-              if (res.data.valid) {
-                setApplied(true);
-              }
-          
-            } catch (err) {
-              setApplied(false);
-              alert("Invalid referral code");
-            }
-          }}
-          className="bg-teal-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg hover:bg-teal-800 active:scale-95 transition-all"
-        >
-          Apply
-        </button>
+        {!applied ? (
+  <button
+    onClick={handleApplyReferral}
+    className="bg-teal-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg"
+  >
+    Apply
+  </button>
+) : (
+  <button
+    onClick={() => {
+      setApplied(false);
+      setCode("");
+      setReferralError("");
+    }}
+    className="bg-red-500 hover:bg-red-600 text-white text-sm font-semibold px-4 py-2.5 rounded-lg"
+  >
+    Remove
+  </button>
+)}
       </div>
       {applied && (
-  <p className="text-teal-600 text-xs mt-1.5">
+  <p className="text-green-600 text-xs mt-2 flex items-center gap-1">
+    <FiCheckCircle />
     Broker code applied successfully
   </p>
 )}
 
-{!applied && code && (
-  <p className="text-red-500 text-xs mt-1.5">
-    Invalid referral code
+{referralError && (
+  <p className="text-red-500 text-xs mt-2 flex items-center gap-1">
+    <FiAlertCircle />
+    {referralError}
   </p>
 )}
+
+
     </div>
   );
 }
@@ -432,10 +456,11 @@ export default function Checkout() {
       const investment = shares * property.sharePrice;
       const discount = applied ? investment * 0.05 : 0;
       const amount = Math.round(investment - discount);
-  
+      console.log("BACKEND URL =>", import.meta.env.VITE_BACKEND_URL);
+      console.log("PAYMENT URL =>", `${import.meta.env.VITE_BACKEND_URL}/api/payment/capturePayment`);
       // 4️⃣ order create
       const orderRes = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/payment/capturePayment`,
+        `${import.meta.env.VITE_BASE_URL}/api/payment/capturePayment`,
         {
           amount,
           currency: "INR",
@@ -488,8 +513,11 @@ export default function Checkout() {
       paymentObject.open();
   
     } catch (err) {
-      console.error(err);
-      alert("Something went wrong");
+      console.log("FULL ERROR =>", err);
+      console.log("STATUS =>", err.response?.status);
+      console.log("DATA =>", err.response?.data);
+    
+      alert(JSON.stringify(err.response?.data));
     }
   };
 

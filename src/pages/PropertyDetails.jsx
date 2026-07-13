@@ -60,7 +60,7 @@ function Gallery({ property }) {
         <img
           src={images[activeIndex]}
           alt="main"
-          className="w-full h-56 sm:h-72 lg:h-80 object-contain transition-transform duration-500 group-hover:scale-105"
+          className="w-full h-56 sm:h-72 lg:h-80 object-cover transition-transform duration-500 group-hover:scale-105"
         />
 
         {/* GRADIENT */}
