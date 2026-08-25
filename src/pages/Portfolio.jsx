@@ -1,33 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
-  FiBell,
   FiMapPin,
   FiDownload,
   FiChevronUp,
   FiChevronDown,
-  FiTrendingUp,
   FiPieChart,
-  FiDollarSign,
   FiBarChart2,
   FiFolder,
   FiFileText,
-  FiCheckCircle,
   FiGrid,
+  FiArrowRight,
+  FiEye,
+  FiUser,
+  FiCreditCard,
+  FiClock,
+  FiXCircle,
+  FiCheckCircle,
+  FiLayers,
   FiLogOut,
 } from "react-icons/fi";
-import { MdOutlineAccountBalance } from "react-icons/md";
-import { BsPersonCircle, BsBuilding } from "react-icons/bs";
-import { NavLink } from "react-router-dom";
-// import { useSelector } from "react-redux";
+import { BsBuilding } from "react-icons/bs";
+import { NavLink, useNavigate } from "react-router-dom";
 import axios from "../utils/axios";
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { FiArrowRight } from "react-icons/fi";
-import { FiEye, FiUser, FiCreditCard  } from "react-icons/fi";
-import { FiClock, FiXCircle } from "react-icons/fi";
-
-
-
 
 const tabs = [
   "Active Investments",
@@ -37,264 +31,258 @@ const tabs = [
   "Support / Exit Request",
 ];
 
+/* ---------------- HEADER ---------------- */
 function PageHeader() {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
-      <div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 bg-gradient-to-r from-teal-900 via-teal-800 to-emerald-900 p-8 rounded-3xl text-white shadow-xl shadow-teal-900/10 relative overflow-hidden">
+      <div className="absolute -right-10 -bottom-10 w-60 h-60 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative z-10">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-700/50 backdrop-blur-md border border-teal-500/30 text-teal-200 text-xs font-semibold mb-3">
+          <FiLayers size={12} /> Institutional Grade Asset Portal
+        </div>
+        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
           My Portfolio
         </h1>
-
-        <p className="text-gray-500 text-sm mt-1">
-          Track your investments and returns across{" "}
-          <span className="font-medium text-gray-700">premium</span> global
-          assets.
+        <p className="text-teal-100/80 text-sm mt-1 max-w-xl font-light">
+          Track your real estate investments, yields, and overall performance across premium global assets in real time.
         </p>
       </div>
 
-      <button
-        className="self-start sm:self-auto bg-teal-800 text-white font-semibold text-sm 
-      
-      px-5 py-3 rounded-xl hover:bg-teal-900 active:scale-95 transition-all whitespace-nowrap"
+      <NavLink
+        to="/property"
+        className="relative z-10 self-start sm:self-auto inline-flex items-center gap-2 bg-emerald-400 text-teal-950 font-bold text-sm px-6 py-3.5 rounded-2xl hover:bg-emerald-300 active:scale-95 transition-all shadow-lg shadow-emerald-400/20 whitespace-nowrap"
       >
-        <NavLink to="/property">Explore More Properties</NavLink>
-      </button>
+        Explore Properties <FiArrowRight size={16} />
+      </NavLink>
     </div>
   );
 }
 
+/* ---------------- STATS BAR ---------------- */
 function StatsBar({ data }) {
   if (!data) return null;
 
   const stats = [
     {
-      icon: <FiGrid size={16} />,
+      icon: <FiGrid size={18} />,
       label: "TOTAL INVESTED",
       value: `₹${data.totalInvested.toLocaleString()}`,
+      badge: "Capital Deployed",
     },
     {
-      icon: <FiPieChart size={16} />,
+      icon: <FiPieChart size={18} />,
       label: "SHARES OWNED",
       value: data.sharesOwned,
+      badge: "Fractional Units",
     },
     {
-      icon: <FiBarChart2 size={16} />,
+      icon: <FiBarChart2 size={18} />,
       label: "EXPECTED RETURNS",
       value: `${data.expectedReturn}%`,
+      badge: "Target Yield",
     },
   ];
+
   return (
-    <div className="bg-green-50 border border-gray-100 rounded-2xl shadow-sm p-4 sm:p-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
       {stats.map((s) => (
-        <div key={s.label} className="flex flex-col">
-          <div className="flex items-center gap-1.5 text-teal-700 mb-1">
-            {s.icon}
-            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
-              {s.label}
+        <div
+          key={s.label}
+          className="bg-white border border-teal-900/5 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden group"
+        >
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-teal-700 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                {s.label}
+              </span>
+              <div className="p-2.5 bg-teal-50 text-teal-800 rounded-2xl">
+                {s.icon}
+              </div>
+            </div>
+            <p className="text-2xl sm:text-3xl font-extrabold text-gray-900 font-mono tracking-tight">
+              {s.value}
+            </p>
+          </div>
+          <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+            <span className="text-xs text-teal-700 font-semibold bg-teal-50 px-2.5 py-1 rounded-full">
+              {s.badge}
             </span>
           </div>
-          <p className="text-xl sm:text-2xl font-extrabold text-gray-900">
-            {s.value}
-          </p>
-          {s.sub && s.sub}
         </div>
       ))}
     </div>
   );
 }
 
+/* ---------------- TAB BAR ---------------- */
 function TabBar({ active, setActive }) {
   return (
-    <div className="w-full overflow-x-auto mb-6">
-      <div className="flex gap-0 min-w-max border-b border-gray-200">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActive(tab)}
-            className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium  whitespace-nowrap transition-all ${
-              active === tab
-                ? "text-gray-900 border-b-2 bg-green-200 rounded-t-xl border-teal-700"
-                : "text-gray-400 hover:text-gray-700"
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
+    <div className="w-full overflow-x-auto mb-8 no-scrollbar">
+      <div className="flex gap-2 p-1.5 bg-gray-200/60 backdrop-blur-md rounded-2xl min-w-max border border-gray-200/80">
+        {tabs.map((tab) => {
+          const isActive = active === tab;
+          return (
+            <button
+              key={tab}
+              onClick={() => setActive(tab)}
+              className={`px-5 py-2.5 text-xs sm:text-sm font-semibold rounded-xl whitespace-nowrap transition-all duration-300 ${
+                isActive
+                  ? "bg-teal-800 text-white shadow-md shadow-teal-900/10"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
+              }`}
+            >
+              {tab}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
 }
 
+/* ---------------- RETURN HISTORY ---------------- */
 function ReturnHistory({ investment }) {
-  const rows = [
-    {
-      date: "Oct 12, 2024",
-      type: "Monthly Rental Distribution",
-      amount: "$1,240.00",
-    },
-    {
-      date: "Sep 12, 2024",
-      type: "Monthly Rental Distribution",
-      amount: "$1,240.00",
-    },
-    {
-      date: "Aug 12, 2024",
-      type: "Quarterly Valuation Gain",
-      amount: "$8,450.00",
-    },
-  ];
   return (
-    <div className="mt-5 pt-5 border-t border-gray-100">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 ">
-        <div className="lg:col-span-2  w-full  ">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">
-            Ownership Highlight
+    <div className="mt-6 pt-6 border-t border-gray-100">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        
+        {/* Ownership Highlight Card */}
+        <div className="lg:col-span-1 bg-teal-50/60 border border-teal-100 rounded-2xl p-5">
+          <p className="text-[10px] font-extrabold text-teal-800 uppercase tracking-widest mb-4">
+            Ownership Structure
           </p>
-          <div className="flex items-center gap-4 mb-4">
-            <div className="relative w-14 h-14 flex-shrink-0">
-              <div className="w-14 h-14 rounded-full border-4 border-teal-600 border-r-gray-100 flex items-center justify-center">
-                <span className="text-xs font-bold text-teal-700">{investment.ownership}%</span>
+          <div className="flex items-center gap-4 mb-5">
+            <div className="relative flex-shrink-0">
+              <div
+                className="w-16 h-16 rounded-full flex items-center justify-center p-1 shadow-inner"
+                style={{
+                  background: `conic-gradient(#0f766e ${
+                    investment.ownership * 3.6
+                  }deg, #e2e8f0 0deg)`,
+                }}
+              >
+                <div className="w-full h-full bg-white rounded-full flex items-center justify-center shadow-sm">
+                  <span className="text-xs font-black text-teal-900">
+                    {investment.ownership.toFixed(2)}%
+                  </span>
+                </div>
               </div>
             </div>
             <div>
-              <p className="font-bold text-gray-900 text-sm">{investment.shares} Shares</p>
-              <p className="text-gray-400 text-xs">
-                Full fractional ownership secured
+              <p className="font-extrabold text-gray-900 text-base">
+                {investment.shares} Shares
+              </p>
+              <p className="text-gray-500 text-xs font-medium">
+                Verified Asset Ownership
               </p>
             </div>
           </div>
+
           {[
-  ["Total Investment", investment.invested],
-  ["Current Value", investment.currentValue],
-  
-
-].map(([label, value]) => (
-  <div
-    key={label}
-    className="flex justify-between py-2 border-b border-gray-50 text-sm"
-  >
-    <span className="text-gray-500">{label}</span>
-
-    <span
-      className={`font-semibold ${
-        label === "Profit / Gain"
-          ? value > 0
-            ? "text-green-600"
-            : "text-red-600"
-          : "text-gray-900"
-      }`}
-    >
-      ₹{(value || 0).toLocaleString()}
-    </span>
-  </div>
-))}
+            ["Total Investment", investment.invested],
+            ["Current Value", investment.currentValue],
+          ].map(([label, value]) => (
+            <div
+              key={label}
+              className="flex justify-between py-2 border-b border-teal-100/60 text-xs last:border-none"
+            >
+              <span className="text-gray-500 font-medium">{label}</span>
+              <span className="font-bold text-gray-900">
+                ₹{(value || 0).toLocaleString()}
+              </span>
+            </div>
+          ))}
         </div>
-        {/* <div className="lg:col-span-3">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Return History</p>
-          <div className="w-full overflow-x-auto">
-            <table className="w-full text-sm min-w-[400px]">
-              <thead>
-                <tr className="text-[10px] text-gray-400 uppercase tracking-wider">
-                  <th className="text-left pb-2 font-semibold">Date</th>
-                  <th className="text-left pb-2 font-semibold">Return Type</th>
-                  <th className="text-right pb-2 font-semibold">Amount</th>
-                  <th className="text-right pb-2 font-semibold">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r, i) => (
-                  <tr key={i} className="border-t border-gray-50">
-                    <td className="py-3 text-gray-500">{r.date}</td>
-                    <td className="py-3 text-gray-700">{r.type}</td>
-                    <td className="py-3 text-right text-gray-900 font-medium">{r.amount}</td>
-                    <td className="py-3 text-right">
-                      <span className="bg-green-50 text-green-600 text-[10px] font-bold px-2 py-0.5 rounded-full">PROCESSED</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div> */}
+
+        {/* Documents */}
         <div className="lg:col-span-1">
-        <Documents docs={investment.documents} />
+          <Documents docs={investment.documents} />
         </div>
 
+        {/* Exit Option */}
         <div className="lg:col-span-1">
-        <ExitPortfolio investments={[investment]} />
+          <ExitPortfolio investments={[investment]} />
         </div>
-       
+
       </div>
     </div>
   );
 }
 
+/* ---------------- INVESTMENT CARD ---------------- */
 function InvestmentCard({ property, expanded, onToggle }) {
   return (
-    <div className="bg-white  rounded-2xl shadow-md mb-4 overflow-hidden">
-      <div className="p-4 sm:p-5">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-sky-400 to-teal-600 flex items-center justify-center flex-shrink-0">
-              <BsBuilding size={20} className="text-white opacity-80" />
+    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all mb-4 overflow-hidden">
+      <div className="p-5 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+          
+          <div className="flex items-center gap-4 flex-1 min-w-0">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-800 to-emerald-700 flex items-center justify-center text-white flex-shrink-0 shadow-md shadow-teal-900/10">
+              <BsBuilding size={22} />
             </div>
             <div className="min-w-0">
-              <h3 className="font-bold text-gray-900 text-sm sm:text-base">
+              <h3 className="font-extrabold text-gray-900 text-base truncate">
                 {property.name}
               </h3>
-              <p className="text-gray-400 text-xs flex items-center gap-1 mt-0.5">
-                <FiMapPin size={10} />
+              <p className="text-gray-500 text-xs flex items-center gap-1 mt-1 font-medium">
+                <FiMapPin size={12} className="text-teal-700" />
                 {property.location}
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4 sm:gap-6 flex-1">
+
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-6 flex-1 bg-gray-50/70 p-3.5 rounded-2xl border border-gray-100">
             <div>
-              <p className="text-[10px] text-gray-400 uppercase font-semibold tracking-wide">
+              <p className="text-[10px] text-gray-400 uppercase font-extrabold tracking-wider">
                 Shares Owned
               </p>
-              <p className="text-sm font-bold text-gray-900 mt-0.5">
-                {property.shares}
+              <p className="text-sm font-extrabold text-gray-900 mt-0.5 font-mono">
+                {property.shares}{" "}
+                <span className="text-[10px] text-teal-700 font-normal">
+                  ({property.ownership.toFixed(2)}%)
+                </span>
               </p>
-              <p className="text-[10px] text-gray-400">{property.ownership}</p>
             </div>
             <div>
-              <p className="text-[10px] text-gray-400 uppercase font-semibold tracking-wide">
-                Invested
+              <p className="text-[10px] text-gray-400 uppercase font-extrabold tracking-wider">
+                Capital Invested
               </p>
-              <p className="text-sm font-bold text-gray-900 mt-0.5">
+              <p className="text-sm font-extrabold text-gray-900 mt-0.5 font-mono">
                 {property.invested}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
+
+          <div className="flex items-center gap-3 flex-shrink-0 justify-between sm:justify-start">
             {property.roi && (
-              <span className="text-xs font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-lg">
+              <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-100 px-3 py-1.5 rounded-xl">
                 {property.roi}
               </span>
             )}
             {property.expandable ? (
               <button
                 onClick={onToggle}
-                className="w-7 h-7 border border-gray-200 rounded-lg flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-all"
+                className="w-9 h-9 border border-gray-200 rounded-xl flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-teal-800 transition-all"
               >
                 {expanded ? (
-                  <FiChevronUp size={14} />
+                  <FiChevronUp size={16} />
                 ) : (
-                  <FiChevronDown size={14} />
+                  <FiChevronDown size={16} />
                 )}
               </button>
             ) : (
-              <button className="border border-gray-200 text-gray-600 text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-all whitespace-nowrap">
+              <button className="border border-gray-200 text-gray-700 text-xs font-bold px-4 py-2 rounded-xl hover:bg-gray-50 transition-all">
                 View Details
               </button>
             )}
           </div>
         </div>
       </div>
+
       {expanded && property.expandable && (
-        <div className="px-4 sm:px-5 pb-5 bg-white border-t border-gray-50">
-         <ReturnHistory investment={property} />
+        <div className="px-5 sm:px-6 pb-6 bg-white border-t border-gray-100">
+          <ReturnHistory investment={property} />
         </div>
       )}
     </div>
@@ -312,6 +300,7 @@ function ActiveInvestments({ data }) {
         <InvestmentCard
           key={p.propertyId}
           property={{
+            investmentId: p.investmentId,
             propertyId: p.propertyId,
             name: p.propertyName,
             location: p.location,
@@ -319,11 +308,9 @@ function ActiveInvestments({ data }) {
             ownership: p.ownership,
             invested: p.invested,
             currentValue: p.currentValue,
-            
             roi: p.roi,
-            documents: p.documents, 
+            documents: p.documents,
             expandable: true,
-            
           }}
           expanded={expanded === i}
           onToggle={() => setExpanded(expanded === i ? -1 : i)}
@@ -333,21 +320,22 @@ function ActiveInvestments({ data }) {
   );
 }
 
+/* ---------------- DOCUMENTS ---------------- */
 function Documents({ docs }) {
   if (!docs || docs.length === 0) {
     return (
-      <div className="text-xs text-gray-400">
-        No documents available
+      <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 text-center text-xs text-gray-400 font-medium">
+        No documents available for this asset.
       </div>
     );
   }
 
   return (
-    <div className="mb-8 shadow-lg px-3 rounded-xl py-2">
-      <div className="flex items-center gap-2 mb-4">
-        <FiFolder size={14} className="text-gray-400" />
-        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
-          Documents
+    <div className="bg-gray-50/70 border border-gray-100 rounded-2xl p-4">
+      <div className="flex items-center gap-2 mb-3">
+        <FiFolder size={14} className="text-teal-700" />
+        <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">
+          Legal & Title Documents
         </p>
       </div>
 
@@ -355,27 +343,29 @@ function Documents({ docs }) {
         {docs.map((doc, i) => (
           <div
             key={i}
-            className="flex items-center justify-between bg-white border border-gray-100 rounded-xl px-4 py-3 shadow-sm"
+            className="flex items-center justify-between bg-white border border-gray-100 rounded-xl px-3.5 py-2.5 shadow-sm hover:border-teal-200 transition-all"
           >
             <div className="flex items-center gap-3">
-              <FiFileText size={16} className="text-teal-700" />
-
+              <div className="p-2 bg-teal-50 text-teal-800 rounded-lg">
+                <FiFileText size={14} />
+              </div>
               <div>
-                <p className="text-sm font-semibold text-gray-800">
+                <p className="text-xs font-bold text-gray-800 leading-tight">
                   {doc.name}
                 </p>
-
-                <p className="text-xs text-gray-400">
-                  {doc.type || "Document"}
+                <p className="text-[10px] text-gray-400">
+                  {doc.type || "Official Document"}
                 </p>
               </div>
             </div>
 
-            <a href={doc.url} target="_blank" rel="noreferrer">
-              <FiDownload
-                size={16}
-                className="text-gray-400 hover:text-teal-700"
-              />
+            <a
+              href={doc.url}
+              target="_blank"
+              rel="noreferrer"
+              className="p-1.5 text-gray-400 hover:text-teal-800 hover:bg-teal-50 rounded-lg transition-all"
+            >
+              <FiDownload size={15} />
             </a>
           </div>
         ))}
@@ -384,127 +374,152 @@ function Documents({ docs }) {
   );
 }
 
+/* ---------------- EXIT PORTFOLIO ---------------- */
 function ExitPortfolio({ investments }) {
   const [selectedId, setSelectedId] = useState("");
 
   const handleExit = async () => {
+
     if (!selectedId) {
       alert("Please select property");
       return;
     }
-
+  
+    const data = JSON.parse(selectedId);
+  
     try {
+  
       await axios.post("/api/portfolio/exit", {
-        propertyId: selectedId, 
+        investmentId: data.investmentId,
+        shares: data.shares,
       });
-
+  
       alert("Exit request submitted");
+  
       window.location.reload();
+  
     } catch (err) {
+  
       console.log(err);
+  
     }
+  
   };
 
   return (
-    <div className="bg-teal-800 rounded-2xl p-5 text-white">
-      <p className="mb-3 text-sm font-bold">Exit Portfolio</p>
+    <div className="bg-gradient-to-br from-teal-900 to-teal-800 rounded-2xl p-5 text-white shadow-lg shadow-teal-900/10">
+      <p className="mb-1 text-sm font-extrabold">Liquidity / Exit Request</p>
+      <p className="text-xs text-teal-200/80 mb-4 font-light">
+        Submit fractional shares back to pool or transfer request.
+      </p>
 
       <select
-        value={selectedId}
-        onChange={(e) => setSelectedId(e.target.value)}
-        className="w-full mb-3 p-2 text-black rounded"
-      >
-        <option value="">Select Property</option>
+  value={selectedId}
+  onChange={(e) => setSelectedId(e.target.value)}
+  className="w-full mb-3 p-2.5 text-xs text-gray-900 bg-white font-medium rounded-xl border-none focus:ring-2 focus:ring-emerald-400 focus:outline-none"
+>
+  <option value="">Select Property To Exit</option>
 
-        {investments.map((inv) => (
-  <option key={inv.propertyId} value={inv.propertyId}>
-    {inv.propertyName || inv.name}
-  </option>
-))}
-      </select>
+  {investments.map((inv) => (
+    <option
+      key={inv.propertyId}
+      value={JSON.stringify({
+        investmentId: inv.investmentId,
+        shares: inv.shares,
+      })}
+    >
+   {inv.propertyName || inv.name}
+    </option>
+  ))}
+</select>
 
       <button
         onClick={handleExit}
-        className="w-full bg-amber-400 text-black font-bold py-2 rounded"
+        className="w-full bg-emerald-400 hover:bg-emerald-300 text-teal-950 font-bold py-2.5 text-xs rounded-xl shadow-md transition-all active:scale-95"
       >
-        Submit Exit Request
+        Submit Request
       </button>
     </div>
   );
 }
 
+/* ---------------- CURATED RELATED PROPERTIES ---------------- */
 function Sidebar({ properties }) {
   if (!properties || properties.length === 0) {
     return (
-      <p className="text-gray-400 text-sm mt-4">
-        No related properties
-      </p>
+      <p className="text-gray-400 text-sm mt-4">No related properties</p>
     );
   }
 
   return (
-    <div className="mt-10">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-bold text-gray-900">
-          Curated Opportunities
-        </h2>
+    <div className="mt-12 pt-8 border-t border-gray-200/80">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h2 className="text-xl font-extrabold text-gray-900 tracking-tight">
+            Curated Opportunities
+          </h2>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Handpicked premium listings aligned with your investment profile
+          </p>
+        </div>
 
         <NavLink
-          to="/portfolio"
-          className="text-sm text-teal-700 font-semibold"
+          to="/property"
+          className="text-xs text-teal-800 font-bold hover:underline flex items-center gap-1"
         >
-          View Portfolio →
+          Explore All <FiArrowRight size={12} />
         </NavLink>
       </div>
 
-      {/* Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {properties.map((p, i) => (
           <div
             key={i}
-            className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-all"
+            className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col justify-between group"
           >
-            {/* IMAGE */}
-            <div className="h-40 bg-gray-200 relative">
-              {p.media?.images?.[0] ? (
-                <img
-                  src={p.media.images[0]}
-                  alt={p.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : null}
+            <div>
+              <div className="h-44 bg-gray-100 relative overflow-hidden">
+                {p.media?.images?.[0] ? (
+                  <img
+                    src={p.media.images[0]}
+                    alt={p.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                ) : null}
 
-              <span className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded-full">
-                {p.type || "Property"}
-              </span>
-            </div>
+                <span className="absolute top-3 left-3 bg-teal-900/80 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-white/20">
+                  {p.type || "Property"}
+                </span>
+              </div>
 
-            {/* CONTENT */}
-            <div className="p-4">
-              <h3 className="font-bold text-gray-900 text-sm">
-                {p.name}
-              </h3>
+              <div className="p-5">
+                <h3 className="font-extrabold text-gray-900 text-base group-hover:text-teal-800 transition-colors">
+                  {p.name}
+                </h3>
 
-              <p className="text-gray-400 text-xs flex items-center gap-1 mt-1">
-                <FiMapPin size={12} />
-                {p.location?.city}, {p.location?.state}
-              </p>
+                <p className="text-gray-500 text-xs flex items-center gap-1 mt-1 font-medium">
+                  <FiMapPin size={12} className="text-teal-700" />
+                  {p.location?.city}, {p.location?.state}
+                </p>
 
-              {/* Bottom row */}
-              <div className="flex justify-between items-center mt-4">
-                <div>
-                  <p className="text-[10px] text-gray-400">ROI</p>
-                  <p className="text-green-600 font-bold text-sm">
-                    {p.roi ? `${p.roi}%` : "--"}
-                  </p>
-                </div>
+                <div className="flex justify-between items-center mt-5 pt-4 border-t border-gray-100">
+                  <div>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                      Target Yield
+                    </p>
+                    <p className="text-emerald-700 font-extrabold text-sm font-mono mt-0.5">
+                      {p.roi ? `${p.roi}%` : "--"}
+                    </p>
+                  </div>
 
-                <div className="text-right">
-                  <p className="text-[10px] text-gray-400">Share</p>
-                  <p className="font-bold text-sm text-gray-900">
-                    ₹{p.pricePerShare?.toLocaleString() || "--"}
-                  </p>
+                  <div className="text-right">
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                      Price / Share
+                    </p>
+                    <p className="font-extrabold text-sm text-gray-900 font-mono mt-0.5">
+                      ₹{p.pricePerShare?.toLocaleString() || "--"}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -515,173 +530,182 @@ function Sidebar({ properties }) {
   );
 }
 
-function WatchCard({ property }) {
-  return (
-    <div className="bg-white rounded-2xl shadow-md mb-4 p-4 flex items-center gap-4">
-
-      {/* IMAGE */}
-      {property.image ? (
-        <img
-          src={property.image}
-          alt={property.name}
-          className="w-16 h-16 rounded-xl object-cover"
-        />
-      ) : (
-        <div className="w-16 h-16 rounded-xl bg-gray-200 flex items-center justify-center">
-          <BsBuilding />
-        </div>
-      )}
-
-      {/* DETAILS */}
-      <div className="flex-1">
-        <h3 className="font-bold text-gray-900 text-sm">
-          {property.name}
-        </h3>
-
-        <p className="text-gray-400 text-xs">
-          {property.location}
-        </p>
-      </div>
-
-      {/* ROI */}
-      {property.roi && (
-        <span className="text-xs font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-lg">
-          +{property.roi ? `${property.roi}% ROI` : ""}
-        </span>
-      )}
-    </div>
-  );
-}
-
+/* ---------------- WATCHLIST ---------------- */
+/* ---------------- WATCHLIST ---------------- */
 function WatchList({ data }) {
   const navigate = useNavigate();
 
-  if (!data || data.length === 0) {
+  const watchlistData = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.watchlist)
+    ? data.watchlist
+    : Array.isArray(data?.data)
+    ? data.data
+    : [];
+
+  if (watchlistData.length === 0) {
     return (
-      <div className="text-center py-20 text-gray-400">
-        No properties in watchlist
+      <div className="bg-white rounded-3xl border border-gray-100 p-12 text-center text-gray-400 font-medium text-sm">
+        Your watchlist is currently empty.
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {watchlistData.map((p) => {
+        const propertyId = p.id || p._id || p.propertyId;
 
-      {data.map((p) => (
-        <div
-          key={p.id}
-          className="bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 group border border-gray-100 cursor-pointer"
-          onClick={() => navigate(`/properties/${p.id}`)}
-        >
+        const propertyName =
+          p.name ||
+          p.title ||
+          p.propertyName ||
+          "Untitled Property";
 
-          {/* IMAGE */}
-          <div className="relative h-48 overflow-hidden">
-            {p.image ? (
-              <img
-                src={p.image}
-                alt={p.name}
-                className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                <BsBuilding size={30} className="text-gray-400" />
+        const propertyImage =
+          p.image ||
+          p.media?.images?.[0] ||
+          p.images?.[0] ||
+          p.property?.image ||
+          p.property?.media?.images?.[0];
+
+        const propertyLocation =
+          typeof p.location === "string"
+            ? p.location
+            : p.location?.city
+            ? `${p.location.city}${p.location.state ? `, ${p.location.state}` : ""}`
+            : p.property?.location?.city
+            ? `${p.property.location.city}${
+                p.property.location.state
+                  ? `, ${p.property.location.state}`
+                  : ""
+              }`
+            : "Location not available";
+
+        const propertyRoi =
+          p.roi ||
+          p.expectedReturn ||
+          p.property?.roi ||
+          p.property?.expectedReturn;
+
+        return (
+          <div
+            key={propertyId}
+            className="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 cursor-pointer group flex flex-col justify-between"
+            onClick={() =>
+              propertyId && navigate(`/properties/${propertyId}`)
+            }
+          >
+            <div>
+              <div className="relative h-48 overflow-hidden bg-gray-100">
+                {propertyImage ? (
+                  <img
+                    src={propertyImage}
+                    alt={propertyName}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-300">
+                    <BsBuilding size={32} />
+                  </div>
+                )}
+
+                {propertyRoi && (
+                  <div className="absolute top-3 right-3 bg-emerald-500 text-teal-950 font-black text-xs px-3 py-1 rounded-full shadow-md">
+                    {propertyRoi}% ROI
+                  </div>
+                )}
               </div>
-            )}
 
-            {/* ROI */}
-            {p.roi && (
-              <div className="absolute top-3 right-3 bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">
-                {p.roi}% ROI
+              <div className="p-5">
+                <h3 className="font-extrabold text-gray-900 text-base group-hover:text-teal-800 transition-colors">
+                  {propertyName}
+                </h3>
+
+                <p className="text-gray-500 text-xs flex items-center gap-1 mt-1 font-medium">
+                  <FiMapPin size={12} className="text-teal-700" />
+                  {propertyLocation}
+                </p>
               </div>
-            )}
-          </div>
+            </div>
 
-          {/* CONTENT */}
-          <div className="p-5">
-            <h3 className="font-bold text-gray-900 text-base">
-              {p.name}
-            </h3>
+            <div className="px-5 pb-5">
+              <div className="pt-3 border-t border-gray-100 flex justify-between items-center text-xs">
+                <span className="text-gray-400 font-medium">
+                  Investment Opportunity
+                </span>
 
-            <p className="text-gray-400 text-xs flex items-center gap-1 mt-1">
-              <FiMapPin size={12} />
-              {p.location}
-            </p>
-
-            <div className="mt-4 flex justify-between items-center">
-              <span className="text-xs text-gray-400">
-                Investment Opportunity
-              </span>
-
-              <span className="text-emerald-600 text-sm font-semibold flex items-center gap-1">
-                View <FiArrowRight size={14} />
-              </span>
+                <span className="text-teal-800 font-extrabold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                  View <FiArrowRight size={12} />
+                </span>
+              </div>
             </div>
           </div>
-
-        </div>
-      ))}
-
+        );
+      })}
     </div>
   );
 }
 
+/* ---------------- PAYMENT HISTORY ---------------- */
 function PaymentCard({ property }) {
+  const isSuccess = property.status === "success";
+  const isPending = property.status === "pending";
 
-  const statusColor =
-    property.status === "success"
-      ? "bg-emerald-100 text-emerald-700"
-      : property.status === "pending"
-      ? "bg-yellow-100 text-yellow-700"
-      : "bg-red-100 text-red-700";
+  const statusStyle = isSuccess
+    ? "bg-emerald-50 text-emerald-800 border-emerald-100"
+    : isPending
+    ? "bg-amber-50 text-amber-800 border-amber-100"
+    : "bg-rose-50 text-rose-800 border-rose-100";
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 p-5 flex justify-between items-center border border-gray-100">
-
-      {/* LEFT */}
-      <div>
-        <p className="text-sm font-bold text-gray-900">
-          {property.name || "Property"}
-        </p>
-
-        <p className="text-xs text-gray-400 mt-1">
-          {property.date
-            ? new Date(property.date).toLocaleDateString()
-            : "No date"}
-        </p>
+    <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all p-5 flex items-center justify-between border border-gray-100">
+      <div className="flex items-center gap-4">
+        <div className={`p-3 rounded-xl ${isSuccess ? "bg-teal-50 text-teal-800" : "bg-gray-100 text-gray-500"}`}>
+          <FiCreditCard size={18} />
+        </div>
+        <div>
+          <p className="text-sm font-extrabold text-gray-900">
+            {property.name || "Property Transaction"}
+          </p>
+          <p className="text-xs text-gray-400 mt-0.5 font-medium">
+            {property.date
+              ? new Date(property.date).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })
+              : "Date unavailable"}
+          </p>
+        </div>
       </div>
 
-      {/* AMOUNT */}
-      <div className="text-right">
-        <p className="text-base font-bold text-gray-900">
+      <div className="flex items-center gap-6">
+        <p className="text-base font-extrabold text-gray-900 font-mono">
           ₹{property.amount ? property.amount.toLocaleString() : "0"}
         </p>
-      </div>
 
-      {/* STATUS */}
-      <div>
-        <span className={`text-xs font-semibold px-3 py-1 rounded-full ${statusColor}`}>
-          {property.status || "unknown"}
+        <span
+          className={`text-xs font-bold px-3 py-1 rounded-full border capitalize ${statusStyle}`}
+        >
+          {property.status || "Unknown"}
         </span>
       </div>
     </div>
   );
 }
 
-
 function Payment({ data }) {
-
-  console.log("PAYMENT DATA:", data);
-
   if (!data || data.length === 0) {
     return (
-      <div className="text-center py-20 text-gray-400">
-        No payment history available
+      <div className="bg-white rounded-3xl border border-gray-100 p-12 text-center text-gray-400 font-medium text-sm">
+        No payment history available.
       </div>
     );
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-3">
       {data.map((p, i) => (
         <PaymentCard
           key={i}
@@ -697,11 +721,7 @@ function Payment({ data }) {
   );
 }
 
-
-
-
-
-
+/* ---------------- KYC DOCUMENTS ---------------- */
 function KycDocuments({ docs, kyc }) {
   const [preview, setPreview] = useState(null);
 
@@ -715,12 +735,12 @@ function KycDocuments({ docs, kyc }) {
   };
 
   const Card = ({ title, icon, children }) => (
-    <div className="bg-white rounded-3xl border border-gray-100 shadow-md p-6 hover:shadow-xl transition-all">
-      <div className="flex items-center gap-2 mb-5">
-        {icon}
-        <h3 className="font-bold text-gray-900">{title}</h3>
+    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 hover:shadow-md transition-all">
+      <div className="flex items-center gap-2.5 mb-5 pb-3 border-b border-gray-100">
+        <div className="p-2 bg-teal-50 text-teal-800 rounded-xl">{icon}</div>
+        <h3 className="font-extrabold text-gray-900 text-base">{title}</h3>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm">
         {children}
       </div>
     </div>
@@ -728,17 +748,17 @@ function KycDocuments({ docs, kyc }) {
 
   const Field = ({ label, value }) => (
     <div>
-      <p className="text-gray-400 text-xs">{label}</p>
-      <p className="font-semibold text-gray-900 mt-1">{value || "-"}</p>
+      <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider">
+        {label}
+      </p>
+      <p className="font-bold text-gray-900 mt-1">{value || "-"}</p>
     </div>
   );
 
   return (
     <div className="space-y-6">
-
-      {/*  PERSONAL INFO */}
       {kyc && (
-        <Card title="Personal Details" icon={<FiUser className="text-emerald-600" />}>
+        <Card title="Personal Details" icon={<FiUser />}>
           <Field label="Full Name" value={kyc.fullName} />
           <Field label="Email" value={kyc.email} />
           <Field label="DOB" value={kyc.dob} />
@@ -746,17 +766,15 @@ function KycDocuments({ docs, kyc }) {
         </Card>
       )}
 
-      {/*  ID DETAILS */}
       {kyc && (
-        <Card title="Identity Details" icon={<FiFileText className="text-emerald-600" />}>
+        <Card title="Identity Details" icon={<FiFileText />}>
           <Field label="PAN Number" value={mask(kyc.panNumber)} />
           <Field label="Aadhaar Number" value={mask(kyc.aadhaarNumber)} />
         </Card>
       )}
 
-      {/*  BANK DETAILS */}
       {kyc && (
-        <Card title="Bank Details" icon={<FiCreditCard className="text-emerald-600" />}>
+        <Card title="Bank Details" icon={<FiCreditCard />}>
           <Field label="Beneficiary Name" value={kyc.bank?.beneficiaryName} />
           <Field label="Account Number" value={mask(kyc.bank?.accountNumber)} />
           <Field label="IFSC Code" value={kyc.bank?.ifsc} />
@@ -764,9 +782,8 @@ function KycDocuments({ docs, kyc }) {
         </Card>
       )}
 
-      {/*  NOMINEE */}
       {kyc && (
-        <Card title="Nominee Details" icon={<FiUser className="text-emerald-600" />}>
+        <Card title="Nominee Details" icon={<FiUser />}>
           <Field label="Name" value={kyc.nominee?.name} />
           <Field label="PAN" value={mask(kyc.nominee?.panNumber)} />
           <Field label="Aadhaar" value={mask(kyc.nominee?.aadhaarNumber)} />
@@ -774,18 +791,19 @@ function KycDocuments({ docs, kyc }) {
         </Card>
       )}
 
-      {/*  STATUS */}
       {kyc && (
-        <div className="bg-white rounded-3xl border p-5 flex justify-between items-center shadow">
-          <span className="text-sm text-gray-500">KYC Status</span>
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 flex justify-between items-center shadow-sm">
+          <span className="text-sm font-bold text-gray-600">
+            KYC Verification Status
+          </span>
 
           <span
-            className={`px-4 py-1 text-xs rounded-full font-bold ${
+            className={`px-4 py-1.5 text-xs rounded-full font-bold uppercase tracking-wider ${
               kyc.status === "approved"
-                ? "bg-green-100 text-green-700"
+                ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
                 : kyc.status === "pending"
-                ? "bg-yellow-100 text-yellow-700"
-                : "bg-gray-100 text-gray-600"
+                ? "bg-amber-50 text-amber-800 border border-amber-200"
+                : "bg-gray-100 text-gray-600 border border-gray-200"
             }`}
           >
             {kyc.status || "draft"}
@@ -793,31 +811,34 @@ function KycDocuments({ docs, kyc }) {
         </div>
       )}
 
-      {/*  DOCUMENTS */}
-      <div className="bg-white rounded-3xl border p-6 shadow">
-        <h2 className="font-bold mb-4 text-gray-900">
+      <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
+        <h2 className="font-extrabold text-base mb-4 text-gray-900">
           Document Preview
         </h2>
 
         {kycDocs.length === 0 ? (
-          <p className="text-gray-400">No documents uploaded</p>
+          <p className="text-gray-400 text-sm font-medium">
+            No verified documents uploaded yet.
+          </p>
         ) : (
           <div className="grid sm:grid-cols-2 gap-4">
             {kycDocs.map((doc, i) => (
               <div
                 key={i}
-                className="border rounded-xl p-4 flex justify-between items-center hover:shadow-md transition"
+                className="border border-gray-100 rounded-2xl p-4 flex justify-between items-center hover:border-teal-200 transition-all bg-gray-50/50"
               >
                 <div>
-                  <p className="font-semibold text-gray-800">{doc.name}</p>
-                  <p className="text-xs text-gray-400">Preview only</p>
+                  <p className="font-extrabold text-sm text-gray-900">
+                    {doc.name}
+                  </p>
+                  <p className="text-xs text-gray-400">Identity verification</p>
                 </div>
 
                 <button
                   onClick={() => setPreview(doc.url)}
-                  className="text-emerald-600 font-semibold flex items-center gap-1"
+                  className="text-teal-800 hover:bg-teal-50 px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all"
                 >
-                  <FiEye /> View
+                  <FiEye size={14} /> View
                 </button>
               </div>
             ))}
@@ -825,21 +846,22 @@ function KycDocuments({ docs, kyc }) {
         )}
       </div>
 
-      {/*  MODAL */}
       {preview && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-4 w-[90%] max-w-2xl relative">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl p-6 w-full max-w-2xl relative shadow-2xl">
             <button
               onClick={() => setPreview(null)}
-              className="absolute top-3 right-3"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-900 font-bold p-2 text-sm"
             >
               ✕
             </button>
 
+            <h3 className="font-extrabold text-gray-900 mb-4 text-base">Document Preview</h3>
+
             {preview.endsWith(".pdf") ? (
-              <iframe src={preview} className="w-full h-[500px]" />
+              <iframe src={preview} className="w-full h-[500px] rounded-2xl border" />
             ) : (
-              <img src={preview} className="w-full rounded-lg" />
+              <img src={preview} className="w-full h-auto max-h-[500px] object-contain rounded-2xl" />
             )}
           </div>
         </div>
@@ -848,15 +870,12 @@ function KycDocuments({ docs, kyc }) {
   );
 }
 
-
-
-
-
+/* ---------------- EXIT REQUESTS ---------------- */
 function ExitRequests({ data }) {
   if (!data || data.length === 0) {
     return (
-      <div className="text-center py-20 text-gray-400">
-        No exit or support requests yet
+      <div className="bg-white rounded-3xl border border-gray-100 p-12 text-center text-gray-400 font-medium text-sm">
+        No active exit or support requests found.
       </div>
     );
   }
@@ -864,72 +883,65 @@ function ExitRequests({ data }) {
   const getStatus = (status) => {
     if (status === "approved") {
       return {
-        color: "bg-emerald-100 text-emerald-700",
+        color: "bg-emerald-50 text-emerald-800 border-emerald-100",
         icon: <FiCheckCircle size={14} />,
         label: "Approved",
       };
     }
     if (status === "pending") {
       return {
-        color: "bg-yellow-100 text-yellow-700",
+        color: "bg-amber-50 text-amber-800 border-amber-100",
         icon: <FiClock size={14} />,
         label: "Pending",
       };
     }
     return {
-      color: "bg-red-100 text-red-700",
+      color: "bg-rose-50 text-rose-800 border-rose-100",
       icon: <FiXCircle size={14} />,
       label: "Rejected",
     };
   };
 
   return (
-    <div className="space-y-5">
-
+    <div className="space-y-3">
       {data.map((req, i) => {
         const status = getStatus(req.status);
 
         return (
           <div
             key={i}
-            className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+            className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
           >
-
-            {/* LEFT */}
             <div>
-              <p className="text-sm font-bold text-gray-900">
-                {req.property || "Property"}
+              <p className="text-sm font-extrabold text-gray-900">
+                {req.property || "Property Asset"}
               </p>
-
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-gray-400 mt-0.5 font-medium">
+                Submitted on:{" "}
                 {req.date
                   ? new Date(req.date).toLocaleDateString()
-                  : "No date"}
+                  : "N/A"}
               </p>
             </div>
 
-            {/* CENTER */}
-            <div className="text-xs text-gray-500">
-              Exit request submitted
+            <div className="text-xs text-gray-500 font-medium">
+              Secondary Market Transfer
             </div>
 
-            {/* RIGHT */}
             <div
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold ${status.color}`}
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${status.color}`}
             >
               {status.icon}
               {status.label}
             </div>
-
           </div>
         );
       })}
-
     </div>
   );
 }
 
-
+/* ---------------- MAIN COMPONENT ---------------- */
 export default function Portfolio() {
   const [portfolioData, setPortfolioData] = useState(null);
   const [payments, setPayments] = useState([]);
@@ -940,7 +952,6 @@ export default function Portfolio() {
   const [exitRequests, setExitRequests] = useState([]);
   const [relatedProperties, setRelatedProperties] = useState([]);
 
-  //  FIRST EFFECT (ALL INITIAL DATA)
   useEffect(() => {
     const fetchPortfolio = async () => {
       try {
@@ -954,7 +965,6 @@ export default function Portfolio() {
     const fetchPayments = async () => {
       try {
         const res = await axios.get("/api/portfolio/payments");
-        console.log("PAYMENT API RESPONSE:", res.data);
         setPayments(res.data);
       } catch (err) {
         console.log(err);
@@ -964,9 +974,6 @@ export default function Portfolio() {
     const fetchDocs = async () => {
       try {
         const res = await axios.get("/api/portfolio/documents");
-
-        console.log("DOC API:", res.data);
-
         setDocs(res.data.documents || []);
         setKycDetails(res.data.kycDetails || null);
       } catch (err) {
@@ -976,12 +983,22 @@ export default function Portfolio() {
 
     const fetchWatchlist = async () => {
       try {
-        
         const res = await axios.get("/api/user/watchlist");
-        console.log("WATCHLIST DATA:", watchlist);
-        setWatchlist(res.data || []);
+    
+        console.log("WATCHLIST RESPONSE:", res.data);
+    
+        const watchlistData = Array.isArray(res.data)
+          ? res.data
+          : Array.isArray(res.data?.watchlist)
+          ? res.data.watchlist
+          : Array.isArray(res.data?.data)
+          ? res.data.data
+          : [];
+    
+        setWatchlist(watchlistData);
       } catch (err) {
         console.log(err);
+        setWatchlist([]);
       }
     };
 
@@ -1001,66 +1018,52 @@ export default function Portfolio() {
     fetchExitRequests();
   }, []);
 
-
   useEffect(() => {
     if (!portfolioData) return;
-  
+
     const fetchRelated = async () => {
       try {
-        const firstPropertyId =
-          portfolioData?.investments?.[0]?.propertyId;
-  
-        console.log("FIRST PROPERTY ID:", firstPropertyId); 
-  
+        const firstPropertyId = portfolioData?.investments?.[0]?.propertyId;
         if (!firstPropertyId) return;
-  
-        console.log("CALLING API WITH ID:", firstPropertyId); 
-  
+
         const res = await axios.get(
           `/api/properties/related/${firstPropertyId}`
         );
-  
-        console.log(" RELATED RESPONSE:", res.data); 
-  
         setRelatedProperties(res.data || []);
       } catch (err) {
         console.log(err);
       }
     };
-  
+
     fetchRelated();
   }, [portfolioData]);
 
-  //  SAFE RETURN AFTER HOOKS
-  if (!portfolioData) return <div>Loading...</div>;
+  if (!portfolioData)
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-400 font-semibold text-sm">
+        Loading Portfolio...
+      </div>
+    );
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className="min-h-screen bg-gray-50/60 font-sans text-gray-900 pb-16">
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
         <PageHeader />
         <StatsBar data={portfolioData.summary} />
         <TabBar active={activeTab} setActive={setActiveTab} />
 
         <div className="flex flex-col lg:flex-row gap-6">
           <div className="flex-1 min-w-0">
-
             {activeTab === "Active Investments" && (
               <ActiveInvestments data={portfolioData.investments} />
             )}
 
-            {activeTab === "Watchlist" && (
-              <WatchList data={watchlist} />
-            )}
+            {activeTab === "Watchlist" && <WatchList data={watchlist} />}
 
-            {activeTab === "Payment History" && (
-              <Payment data={payments} />
-            )}
-
+            {activeTab === "Payment History" && <Payment data={payments} />}
           </div>
         </div>
 
-        {/*  ONLY ONE SIDEBAR */}
         {activeTab === "Active Investments" && (
           <Sidebar properties={relatedProperties} />
         )}
@@ -1072,7 +1075,6 @@ export default function Portfolio() {
         {activeTab === "Support / Exit Request" && (
           <ExitRequests data={exitRequests} />
         )}
-
       </main>
     </div>
   );

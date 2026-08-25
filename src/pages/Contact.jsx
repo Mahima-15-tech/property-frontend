@@ -98,14 +98,166 @@ function ContactForm() {
   );
 }
 
+const faqs = [
+  {
+    q: "What is Pronex World?",
+    a: (
+      <>
+        <p>
+          Pronex World is an AI-powered fractional real estate investment
+          platform that enables investors to co-own premium real estate through
+          dedicated Limited Liability Partnerships (LLPs). Each property is
+          owned through a separate LLP, allowing investors to participate in
+          high-value real estate with a minimum investment of ₹10 lakh.
+        </p>
+      </>
+    ),
+  },
+
+  {
+    q: "How do investors earn returns?",
+    a: (
+      <>
+        <p className="mb-3">
+          For every property, Pronex World forms a separate LLP.
+        </p>
+
+        <ul className="list-disc pl-5 space-y-1">
+          <li>
+            Pronex World holds a 10% partnership interest and manages the LLP.
+          </li>
+          <li>
+            The remaining 90% partnership interests are held by up to nine
+            investors, each holding a 10% stake.
+          </li>
+          <li>
+            Pronex World oversees property acquisition, documentation,
+            compliance, asset management, and exit on behalf of the LLP,
+            subject to the LLP Agreement.
+          </li>
+        </ul>
+      </>
+    ),
+  },
+
+  {
+    q: "How do investors earn returns?",
+    a: (
+      <>
+        <p className="mb-3">Investors may benefit from:</p>
+
+        <ul className="list-disc pl-5 space-y-1 mb-3">
+          <li>
+            Capital appreciation in the property's value over time.
+          </li>
+          <li>
+            Rental income or other property income, where applicable and as
+            provided under the LLP Agreement.
+          </li>
+          <li>
+            Net proceeds upon the sale or exit of the property, distributed
+            according to each partner's ownership interest.
+          </li>
+        </ul>
+
+        <p>
+          Investment returns are market-linked and are not guaranteed.
+        </p>
+      </>
+    ),
+  },
+
+  {
+    q: "What properties can I invest in?",
+    a: (
+      <>
+        <p className="mb-3">
+          Pronex World focuses on carefully selected real estate
+          opportunities, including:
+        </p>
+
+        <ul className="list-disc pl-5 space-y-1">
+          <li>Premium residential apartments</li>
+          <li>Luxury villas</li>
+          <li>Commercial office spaces</li>
+          <li>Retail assets</li>
+          <li>Mixed-use developments</li>
+          <li>
+            Other high-potential real estate opportunities identified through
+            AI-powered market intelligence
+          </li>
+        </ul>
+
+        <p className="mt-3">
+          Property availability may vary based on market opportunities.
+        </p>
+      </>
+    ),
+  },
+
+  {
+    q: "What is the minimum investment?",
+    a: (
+      <>
+        <p>
+          The minimum investment starts from ₹10,00,000, subject to the terms
+          of the specific investment opportunity.
+        </p>
+      </>
+    ),
+  },
+
+  {
+    q: "Who manages the property?",
+    a: (
+      <>
+        <p>
+          Pronex World manages the day-to-day administration of each LLP,
+          including property acquisition, legal documentation, compliance,
+          asset management, reporting, and exit coordination. Investors remain
+          partners in the LLP and hold ownership interests as specified in the
+          LLP Agreement.
+        </p>
+      </>
+    ),
+  },
+
+  {
+    q: "Is my investment diversified?",
+    a: (
+      <>
+        <p>
+          Yes. Instead of investing your entire capital in a single property,
+          you may choose to invest across multiple LLPs, properties, cities,
+          and asset classes to build a diversified real estate portfolio.
+        </p>
+      </>
+    ),
+  },
+
+  {
+    q: "How does AI help?",
+    a: (
+      <>
+        <p className="mb-3">
+          Pronex World's AI-powered platform analyzes:
+        </p>
+
+        <ul className="list-disc pl-5 space-y-1">
+          <li>Market trends</li>
+          <li>Location intelligence</li>
+          <li>Infrastructure growth</li>
+          <li>Comparable transactions</li>
+          <li>Property fundamentals</li>
+          <li>Demand and supply indicators</li>
+        </ul>
+      </>
+    ),
+  },
+];
 
 function FAQ() {
-  const faqs = [
-    { q: "How quickly will I hear back?", a: "We respond to all queries within 2 business hours during working hours. For urgent matters, please call us directly." },
-    { q: "Can I schedule a call with an advisor?", a: "Yes! Use our contact form with 'Investment Inquiry' type and we'll schedule a dedicated 30-minute consultation at your convenience." },
-    { q: "What documents do I need for KYC support?", a: "PAN card, Aadhaar, bank statement (last 3 months), and a passport photo. Our KYC team will guide you through the entire process." },
-    { q: "Is my data safe when I contact you?", a: "Absolutely. All communications are encrypted with AES-256 and we never share your data with third parties." },
-  ];
+ 
   const [open, setOpen] = useState(null);
   return (
     <section className="bg-slate-50 py-12 sm:py-16">
@@ -115,18 +267,38 @@ function FAQ() {
           <p className="text-gray-500 text-sm sm:text-base">Quick answers to common support questions.</p>
         </div>
         <div className="space-y-3">
-          {faqs.map((f, i) => (
-            <div key={i} className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
-              <button onClick={() => setOpen(open === i ? null : i)} className="w-full flex items-center justify-between px-5 py-4 text-left">
-                <span className="font-semibold text-gray-900 text-sm">{f.q}</span>
-                {open === i ? <FiChevronUp size={16} className="text-teal-700 flex-shrink-0" /> : <FiChevronDown size={16} className="text-gray-400 flex-shrink-0" />}
-              </button>
-              {open === i && (
-                <div className="px-5 pb-4 border-t border-gray-50">
-                  <p className="text-gray-500 text-sm leading-relaxed pt-3">{f.a}</p>
-                </div>
-              )}
-            </div>
+        {faqs.map((f, i) => (
+  <div
+    key={i}
+    className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm"
+  >
+    <button
+      onClick={() => setOpen(open === i ? null : i)}
+      className="w-full flex items-center justify-between px-5 py-4 text-left"
+    >
+      <span className="font-semibold text-gray-900 text-sm">{f.q}</span>
+
+      {open === i ? (
+        <FiChevronUp
+          size={16}
+          className="text-teal-700 flex-shrink-0"
+        />
+      ) : (
+        <FiChevronDown
+          size={16}
+          className="text-gray-400 flex-shrink-0"
+        />
+      )}
+    </button>
+
+    {open === i && (
+      <div className="px-5 pb-4 border-t border-gray-50">
+        <div className="text-gray-500 text-sm leading-relaxed pt-3">
+          {f.a}
+        </div>
+      </div>
+    )}
+  </div>
           ))}
         </div>
       </div>

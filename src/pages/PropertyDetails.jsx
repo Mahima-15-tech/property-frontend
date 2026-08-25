@@ -168,26 +168,44 @@ function ReturnsCalculator() {
   );
 }
 
-function StickyCard({property}) {
+function StickyCard({ property, liked, setLiked }){
   const dispatch = useDispatch();
-  const [liked, setLiked] = useState(false);
+  // const [liked, setLiked] = useState(false);
   // const properties = useSelector((state) => state.property.properties);
 
   // console.log("pro" , properties,  );
   const handleWatchlist = async () => {
     const propertyId = property?._id || property?.id;
   
+    if (!propertyId) {
+      toast.error("Property ID not found");
+      return;
+    }
+  
     try {
-      await axios.post("/api/user/watchlist", { propertyId });
+      const res = await axios.post(
+        `/api/user/watchlist/toggle/${propertyId}`
+      );
+      window.dispatchEvent(
+        new Event("watchlistUpdated")
+      );
   
-      setLiked((prev) => !prev); // 🔥 UI toggle
-  
-      toast.success(!liked ? "Added ❤️" : "Removed ❌");
+      if (res.data.action === "added") {
+        setLiked(true);
+        toast.success("Added to watchlist");
+      } else {
+        setLiked(false);
+        toast.success("Removed from watchlist");
+      }
+      
   
     } catch (err) {
-      toast.error("Error");
+      console.log(err.response?.data || err);
+      toast.error(
+        err.response?.data?.message || "Something went wrong"
+      );
     }
-  };
+  };  
    
 
   const propertyId = property?.id || property?._id;
@@ -333,20 +351,23 @@ const [liked, setLiked] = useState(false);
       try {
         const res = await axios.get("/api/user/watchlist");
   
-        const exists = res.data.some(
+        const watchlist = res.data?.data || [];
+  
+        const currentPropertyId = property?._id || property?.id;
+  
+        const exists = watchlist.some(
           (item) =>
-            item._id === property?._id ||
-            item.property?._id === property?._id
+            item._id?.toString() === currentPropertyId?.toString()
         );
   
         setLiked(exists);
   
       } catch (err) {
-        console.log(err);
+        console.log("Watchlist error:", err.response?.data || err);
       }
     };
   
-    if (property?._id) {
+    if (property?._id || property?.id) {
       checkWatchlist();
     }
   }, [property]);
@@ -561,7 +582,11 @@ const [liked, setLiked] = useState(false);
           </div>
 
           <div className="w-full lg:w-80 xl:w-96 shrink-0">
-            <StickyCard  property={property}/>
+          <StickyCard
+  property={property}
+  liked={liked}
+  setLiked={setLiked}
+/>
           </div>
 
           
