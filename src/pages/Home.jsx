@@ -22,6 +22,10 @@ import {
   FiBookOpen,
   FiActivity,
   FiBriefcase,
+  FiChevronLeft,
+  FiChevronRight,
+  
+
 
 } from "react-icons/fi";
 
@@ -772,9 +776,42 @@ function PropertyCard({ p }) {
    INVESTMENT OPPORTUNITIES
 ========================================================= */
 
+
+
+
 function Opportunities() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(3);
+
+  // ==========================================
+  // RESPONSIVE ITEMS
+  // ==========================================
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 640) {
+        setItemsPerPage(1);
+      } else if (window.innerWidth < 1024) {
+        setItemsPerPage(2);
+      } else {
+        setItemsPerPage(3);
+      }
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  // ==========================================
+  // FETCH FEATURED PROPERTIES
+  // ==========================================
 
   const fetchFeaturedProperties = async () => {
     try {
@@ -791,17 +828,18 @@ function Opportunities() {
 
         img:
           p.media?.images?.[0] ||
-          "https://via.placeholder.com/800x500",
+          "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80",
 
         price:
           p.roi !== undefined && p.roi !== null
             ? `${p.roi}%`
-            : "Available in Details",
+            : "N/A",
 
         yield:
-          p.rentalYield !== undefined && p.rentalYield !== null
+          p.rentalYield !== undefined &&
+          p.rentalYield !== null
             ? `${p.rentalYield}%`
-            : "Available in Details",
+            : "N/A",
 
         sharePrice:
           p.pricePerShare
@@ -811,13 +849,14 @@ function Opportunities() {
         available:
           p.availableShares !== undefined &&
           p.totalShares !== undefined
-            ? `${p.availableShares}/${p.totalShares}`
-            : "Check Availability",
+            ? `${p.availableShares} / ${p.totalShares}`
+            : "Available",
 
         badge: p.type?.toUpperCase() || "PROPERTY",
       }));
 
       setProperties(formatted);
+      setCurrentIndex(0);
     } catch (err) {
       console.error("Error fetching properties:", err);
     } finally {
@@ -825,70 +864,329 @@ function Opportunities() {
     }
   };
 
-
   useEffect(() => {
     fetchFeaturedProperties();
   }, []);
 
+  // ==========================================
+  // MAX SLIDE INDEX
+  // ==========================================
+
+  const maxIndex = Math.max(
+    0,
+    properties.length - itemsPerPage
+  );
+
+  // ==========================================
+  // RESET INDEX ON RESPONSIVE CHANGE
+  // ==========================================
+
+  useEffect(() => {
+    setCurrentIndex((prev) =>
+      Math.min(prev, maxIndex)
+    );
+  }, [maxIndex]);
+
+  // ==========================================
+  // AUTO SCROLL
+  // ==========================================
+
+  useEffect(() => {
+    if (properties.length <= itemsPerPage) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => {
+        if (prev >= maxIndex) {
+          return 0;
+        }
+
+        return prev + 1;
+      });
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [
+    properties.length,
+    itemsPerPage,
+    maxIndex,
+  ]);
+
+  // ==========================================
+  // NEXT
+  // ==========================================
+
+  const nextSlide = () => {
+    setCurrentIndex((prev) => {
+      if (prev >= maxIndex) {
+        return 0;
+      }
+
+      return prev + 1;
+    });
+  };
+
+  // ==========================================
+  // PREVIOUS
+  // ==========================================
+
+  const prevSlide = () => {
+    setCurrentIndex((prev) => {
+      if (prev <= 0) {
+        return maxIndex;
+      }
+
+      return prev - 1;
+    });
+  };
+
+  // ==========================================
+  // SLIDE WIDTH
+  // ==========================================
+
+  const slideWidth = 100 / itemsPerPage;
 
   return (
-    <section className="py-16 lg:py-24 bg-emerald-50">
+    <section className="py-16 lg:py-24 bg-slate-50/70 overflow-hidden relative">
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        {/* ==========================================
+            HEADER
+        ========================================== */}
 
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-10">
 
           <div>
 
-            <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest">
-              Selected Opportunities
-            </p>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 rounded-full" />
 
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mt-2">
-              Investment Opportunities
+              <p className="text-xs font-extrabold text-emerald-700 uppercase tracking-widest">
+                Curated Selection
+              </p>
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mt-2 tracking-tight">
+              Latest Investment Opportunities
             </h2>
 
-            <p className="text-gray-500 text-sm mt-3 max-w-xl">
-              Explore selected real estate opportunities and review relevant
-              property information before making an investment decision.
+            <p className="text-gray-500 text-sm sm:text-base mt-3 max-w-xl">
+              Explore high-yield real estate assets verified by
+              industry experts.
             </p>
 
           </div>
 
-
           <NavLink
             to="/property"
-            className="inline-flex items-center gap-2 text-emerald-700 text-sm font-semibold hover:gap-3 transition-all"
+            className="inline-flex items-center gap-2 text-emerald-700 hover:text-emerald-800 text-sm font-bold group transition-all"
           >
             Explore All Opportunities
-            <FiArrowRight />
+
+            <FiArrowRight
+              className="group-hover:translate-x-1 transition-transform"
+            />
           </NavLink>
 
         </div>
 
 
+        {/* ==========================================
+            CONTENT
+        ========================================== */}
+
         {loading ? (
-          <div className="py-16 text-center text-gray-500">
-            Loading investment opportunities...
+
+          <div className="py-20 text-center flex flex-col items-center justify-center gap-3">
+
+            <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+
+            <p className="text-gray-500 text-sm font-medium">
+              Loading opportunities...
+            </p>
+
           </div>
+
         ) : properties.length === 0 ? (
-          <div className="py-16 text-center text-gray-500">
+
+          <div className="py-16 text-center text-gray-500 bg-white rounded-2xl border border-gray-100 shadow-sm">
             No investment opportunities are currently available.
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
-            {properties.map((property) => (
-              <PropertyCard
-                key={property.id}
-                p={property}
-              />
-            ))}
+        ) : (
+
+          <div className="relative">
+
+            {/* ==========================================
+                CAROUSEL VIEWPORT
+            ========================================== */}
+
+            <div className="overflow-hidden">
+
+              {/* ==========================================
+                  CAROUSEL TRACK
+              ========================================== */}
+
+              <div
+                className="flex transition-transform duration-700 ease-in-out"
+                style={{
+                  transform: `translateX(-${
+                    currentIndex * slideWidth
+                  }%)`,
+                }}
+              >
+
+                {properties.map((property) => (
+
+                  <div
+                    key={property.id}
+                    className="shrink-0 px-2 sm:px-3"
+                    style={{
+                      width: `${slideWidth}%`,
+                    }}
+                  >
+
+                    <PropertyCard p={property} />
+
+                  </div>
+
+                ))}
+
+              </div>
+
+            </div>
+
+
+            {/* ==========================================
+                PREVIOUS BUTTON
+            ========================================== */}
+
+            {properties.length > itemsPerPage && (
+
+              <button
+                onClick={prevSlide}
+                aria-label="Previous property"
+                className="
+                  absolute
+                  left-1
+                  sm:left-0
+                  top-1/2
+                  -translate-y-1/2
+                  w-10
+                  h-10
+                  sm:w-11
+                  sm:h-11
+                  rounded-full
+                  bg-white
+                  shadow-lg
+                  border
+                  border-gray-100
+                  flex
+                  items-center
+                  justify-center
+                  text-gray-700
+                  hover:bg-emerald-700
+                  hover:text-white
+                  transition-all
+                  active:scale-90
+                  z-20
+                "
+              >
+
+                <FiChevronLeft size={21} />
+
+              </button>
+
+            )}
+
+
+            {/* ==========================================
+                NEXT BUTTON
+            ========================================== */}
+
+            {properties.length > itemsPerPage && (
+
+              <button
+                onClick={nextSlide}
+                aria-label="Next property"
+                className="
+                  absolute
+                  right-1
+                  sm:right-0
+                  top-1/2
+                  -translate-y-1/2
+                  w-10
+                  h-10
+                  sm:w-11
+                  sm:h-11
+                  rounded-full
+                  bg-white
+                  shadow-lg
+                  border
+                  border-gray-100
+                  flex
+                  items-center
+                  justify-center
+                  text-gray-700
+                  hover:bg-emerald-700
+                  hover:text-white
+                  transition-all
+                  active:scale-90
+                  z-20
+                "
+              >
+
+                <FiChevronRight size={21} />
+
+              </button>
+
+            )}
 
           </div>
+
         )}
 
+
+        {/* ==========================================
+            CAROUSEL DOTS
+        ========================================== */}
+
+        {!loading &&
+          properties.length > itemsPerPage && (
+
+            <div className="flex justify-center items-center gap-2 mt-7">
+
+              {Array.from({
+                length: maxIndex + 1,
+              }).map((_, index) => (
+
+                <button
+                  key={index}
+                  onClick={() => setCurrentIndex(index)}
+                  aria-label={`Go to slide ${index + 1}`}
+                  className={`
+                    h-2.5
+                    rounded-full
+                    transition-all
+                    duration-300
+                    ${
+                      currentIndex === index
+                        ? "w-8 bg-emerald-700"
+                        : "w-2.5 bg-emerald-200 hover:bg-emerald-400"
+                    }
+                  `}
+                />
+
+              ))}
+
+            </div>
+
+          )}
+
       </div>
+
     </section>
   );
 }

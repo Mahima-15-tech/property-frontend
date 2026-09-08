@@ -1,293 +1,250 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+
 import {
   HiOutlineUserGroup,
   HiOutlineShieldCheck,
-  HiOutlineChartBar,
   HiOutlineCurrencyDollar,
   HiOutlineCalendar,
   HiOutlineCheckCircle,
 } from "react-icons/hi";
+
 import {
   HiOutlineSquares2X2,
   HiBriefcase,
-  HiOutlineUsers,
   HiOutlineBanknotes,
-  HiOutlineDocumentText,
   HiOutlineQuestionMarkCircle,
   HiArrowRightOnRectangle,
   HiOutlineShare,
   HiOutlineClipboardDocument,
   HiOutlineChevronLeft,
   HiOutlineChevronRight,
+  HiOutlineArrowTrendingUp,
+  HiOutlineClock,
 } from "react-icons/hi2";
-import { RiCopperCoinLine } from "react-icons/ri";
-// import { CopyToClipboard } from "react-copy-to-clipboard";
-import { RxCross1 } from "react-icons/rx";
-import axios from "../utils/axios"; 
 
+import {
+  RiCopperCoinLine,
+  RiMoneyRupeeCircleLine,
+} from "react-icons/ri";
+
+import {
+  RxCross1,
+} from "react-icons/rx";
+
+import axios from "../utils/axios";
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
 
 const navItems = [
   {
     icon: HiOutlineSquares2X2,
     label: "Overview",
     type: "overview",
-    active: true,
   },
-  { icon: HiOutlineUserGroup, label: "Total Referral", type: "referral" },
-  { icon: HiOutlineShieldCheck, label: "Total Converted", type: "converted" },
-  { icon: HiOutlineBanknotes, label: "Commission", type: "commission" }
-];
-
-const statCards = [
   {
     icon: HiOutlineUserGroup,
     label: "Total Referrals",
-    value: "1,284",
-    color: "text-teal-700",
+    type: "referral",
   },
   {
     icon: HiOutlineShieldCheck,
     label: "Total Converted",
-    value: "432",
-    color: "text-teal-700",
+    type: "converted",
   },
-  // { icon: HiOutlineChartBar, label: "Total Investment", value: "$2.4M", color: "text-teal-700" },
   {
-    icon: RiCopperCoinLine,
-    label: "Total Earnings",
-    value: "$86,400",
-    color: "text-yellow-600",
+    icon: HiOutlineBanknotes,
+    label: "Commission",
+    type: "commission",
   },
 ];
 
-const recentInvestors = [
-  {
-    name: "Jonathan Sterling",
-    contact: "+91  XXXXX1234",
-    property: "Azure Bay Penthouse",
-    amount: "$125,000",
-    date: "Oct 12, 2023",
-    status: "Completed",
-  },
-  {
-    name: "Amara Okafor",
-    contact: "+91  XXXXX5678",
-    property: "Golden Valley Estates",
-    amount: "$45,000",
-    date: "Oct 08, 2023",
-    status: "In Process",
-  },
-  {
-    name: "Kenji Tanaka",
-    contact: "+91  XXXXX9812",
-    property: "The Sovereign Tower",
-    amount: "$250,000",
-    date: "Sep 28, 2023",
-    status: "Completed",
-  },
-];
-
-const totalReferral = [
-  {
-    name: "Jonathan Sterling",
-    contact: "+91  XXXXX1234",
-    property: "Azure Bay Penthouse",
-    amount: "$125,000",
-    date: "Oct 12, 2023",
-    status: "Completed",
-  },
-  {
-    name: "Amara Okafor",
-    contact: "+91  XXXXX5678",
-    property: "Golden Valley Estates",
-    amount: "$45,000",
-    date: "Oct 08, 2023",
-    status: "In Process",
-  },
-  {
-    name: "Kenji Tanaka",
-    contact: "+91  XXXXX9812",
-    property: "The Sovereign Tower",
-    amount: "$250,000",
-    date: "Sep 28, 2023",
-    status: "Completed",
-  },
-  {
-    name: "Jonathan Sterling",
-    contact: "+91  XXXXX1234",
-    property: "Azure Bay Penthouse",
-    amount: "$125,000",
-    date: "Oct 12, 2023",
-    status: "Completed",
-  },
-  {
-    name: "Amara Okafor",
-    contact: "+91  XXXXX5678",
-    property: "Golden Valley Estates",
-    amount: "$45,000",
-    date: "Oct 08, 2023",
-    status: "In Process",
-  },
-  {
-    name: "Kenji Tanaka",
-    contact: "+91  XXXXX9812",
-    property: "The Sovereign Tower",
-    amount: "$250,000",
-    date: "Sep 28, 2023",
-    status: "Completed",
-  },
-  {
-    name: "Jonathan Sterling",
-    contact: "+91  XXXXX1234",
-    property: "Azure Bay Penthouse",
-    amount: "$125,000",
-    date: "Oct 12, 2023",
-    status: "Completed",
-  },
-  {
-    name: "Amara Okafor",
-    contact: "+91  XXXXX5678",
-    property: "Golden Valley Estates",
-    amount: "$45,000",
-    date: "Oct 08, 2023",
-    status: "In Process",
-  },
-  // { name: "Kenji Tanaka", contact: "+91  XXXXX9812", property: "The Sovereign Tower", amount: "$250,000", date: "Sep 28, 2023", status: "Completed" },
-];
-
-const commissionDetails = [
-  {
-    property: "Azure Bay Penthouse",
-    investor: "Jonathan S.",
-    commission: "$6,250",
-    status: "Paid",
-  },
-  {
-    property: "The Sovereign Tower",
-    investor: "Kenji T.",
-    commission: "$12,500",
-    status: "Pending",
-  },
-];
-
-const opportunities = [
-  {
-    tag: "PREMIUM ASSET",
-    tagColor: "bg-teal-700",
-    roi: "8.4% Est. ROI",
-    roiColor: "bg-teal-700",
-    name: "Elysium Gardens",
-    location: "Beverly Hills, California",
-    price: "$2,500",
-    img: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&q=80",
-  },
-  {
-    tag: "NEWLY ADDED",
-    tagColor: "bg-teal-500",
-    roi: "12.2% Est. ROI",
-    roiColor: "bg-teal-500",
-    name: "Indigo Reef Residences",
-    location: "Malibu Coastline",
-    price: "$10,000",
-    img: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&q=80",
-  },
-  {
-    tag: "COMMERCIAL",
-    tagColor: "bg-slate-700",
-    roi: "9.8% Est. Yield",
-    roiColor: "bg-slate-700",
-    name: "Metropolitan Plaza",
-    location: "Downtown Business District",
-    price: "$5,000",
-    img: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=80",
-  },
-];
-
-const chartPoints = [
-  { x: 0, y: 85 },
-  { x: 1, y: 80 },
-  { x: 2, y: 75 },
-  { x: 3, y: 60 },
-  { x: 4, y: 45 },
-  { x: 5, y: 35 },
-  { x: 6, y: 30 },
-  { x: 7, y: 20 },
-  { x: 8, y: 25 },
-  { x: 9, y: 30 },
-  { x: 10, y: 20 },
-  { x: 11, y: 10 },
-];
+/* =========================================================
+   STATUS BADGE
+========================================================= */
 
 function StatusBadge({ status }) {
-  const s =
-    status === "Completed"
-      ? "bg-green-100 text-green-700"
-      : "bg-yellow-100 text-yellow-700";
+  const normalized =
+    String(status || "").toLowerCase();
 
-      
+  let styles =
+    "bg-slate-100 text-slate-600 border-slate-200";
+
+  let label = status || "Pending";
+
+  if (
+    normalized === "completed" ||
+    normalized === "approved" ||
+    normalized === "paid"
+  ) {
+    styles =
+      "bg-emerald-50 text-emerald-700 border-emerald-200";
+  } else if (
+    normalized === "in process" ||
+    normalized === "pending" ||
+    normalized === "processing"
+  ) {
+    styles =
+      "bg-amber-50 text-amber-700 border-amber-200";
+  } else if (
+    normalized === "rejected" ||
+    normalized === "failed"
+  ) {
+    styles =
+      "bg-red-50 text-red-700 border-red-200";
+  }
+
   return (
-    <span className={`px-3 py-1 rounded-full text-xs font-medium ${s}`}>
-      {status}
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold ${styles}`}
+    >
+      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+      {label}
     </span>
   );
 }
 
+/* =========================================================
+   HEADER
+========================================================= */
 
+function Header({
+  setMobileOpen,
+  profile,
+}) {
+  const [copied, setCopied] = useState(false);
 
-// function Sidebar({ mobileOpen, setMobileOpen }) {
-//   return (
-//     <>
-//       {mobileOpen && (
-//         <div
-//           className="fixed inset-0 bg-black/40 z-10 lg:hidden"
-//           onClick={() => setMobileOpen(false)}
-//         />
-//       )}
-//       <aside
-//         className={`fixed top-0 left-0 h-screen w-44 bg-white border-r border-gray-100 flex flex-col z-10 transition-transform duration-300
-//         ${
-//           mobileOpen ? "translate-x-0" : "-translate-x-full"
-//         } lg:translate-x-0 lg:fixed lg:top-0 lg:flex lg:h-screen lg:flex-shrink-0`}
-//       >
-//         <div className="flex items-center gap-2 px-4 py-5 border-b border-gray-100">
-//           <div className="w-8 h-8 bg-teal-700 rounded-lg flex items-center justify-center">
-//             <HiBriefcase className="text-white text-sm" />
-//           </div>
-//           <div>
-//             <p className="text-sm whitespace-nowrap font-semibold text-gray-800 leading-tight">
-//               Broker Portal
-//             </p>
-//             <p className="text-xs text-gray-400">Premium Tier</p>
-//           </div>
-//         </div>
-//         <nav className="flex-1 py-4 px-2">
-//           {navItems.map(({ icon: Icon, label, active }) => (
-//             <button
-//               key={label} 
-//               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 text-sm font-medium transition-colors
-//               ${
-//                 active
-//                   ? "bg-teal-50 text-teal-700"
-//                   : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-//               }`}
-//             >
-//               <Icon className="text-lg flex-shrink-0" />
-//               {label}
-//             </button>
-//           ))}
-//         </nav>
-//         <div className="px-2 pb-4 border-t border-gray-100 pt-3">
-//           <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-500 hover:bg-gray-50 mb-1">
-//             <HiOutlineQuestionMarkCircle className="text-lg" /> Help Center
-//           </button>
-//           <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-500 hover:bg-gray-50">
-//             <HiArrowRightOnRectangle className="text-lg" /> Sign Out
-//           </button>
-//         </div>
-//       </aside>
-//     </>
-//   );
-// }
+  const referralCode =
+    profile?.referralCode || "";
+
+  const handleCopy = async () => {
+    if (!referralCode) return;
+
+    try {
+      await navigator.clipboard.writeText(
+        referralCode
+      );
+
+      setCopied(true);
+
+      setTimeout(() => {
+        setCopied(false);
+      }, 1600);
+    } catch (error) {
+      console.log("Copy failed", error);
+    }
+  };
+
+  const handleShare = () => {
+    if (!referralCode) return;
+
+    const text = `Join using my referral code: ${referralCode} ${
+      profile?.shareLink || ""
+    }`;
+
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(
+        text
+      )}`,
+      "_blank"
+    );
+  };
+
+  return (
+    <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+
+      {/* LEFT */}
+
+      <div className="flex items-center gap-3">
+
+        <button
+          type="button"
+          className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm lg:hidden"
+          onClick={() =>
+            setMobileOpen((prev) => !prev)
+          }
+        >
+          <HiOutlineSquares2X2 className="text-xl" />
+        </button>
+
+        <div>
+
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+
+            <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-600">
+              Partner Portal
+            </span>
+          </div>
+
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+            Broker Dashboard
+          </h1>
+
+          <p className="mt-1 text-xs text-slate-500 sm:text-sm">
+            Manage your referrals, conversions and earnings.
+          </p>
+
+        </div>
+      </div>
+
+      {/* RIGHT ACTIONS */}
+
+      <div className="flex flex-wrap items-center gap-2">
+
+        {/* REFERRAL CODE */}
+
+        <div className="flex items-center rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
+
+          <div className="px-3 py-1.5">
+
+            <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
+              Referral Code
+            </p>
+
+            <p className="text-xs font-bold tracking-wide text-slate-800">
+              {referralCode || "----"}
+            </p>
+
+          </div>
+
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-50 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+            title="Copy referral code"
+          >
+            {copied ? (
+              <HiOutlineCheckCircle className="text-emerald-600" />
+            ) : (
+              <HiOutlineClipboardDocument />
+            )}
+          </button>
+
+        </div>
+
+        {/* SHARE */}
+
+        <button
+          type="button"
+          onClick={handleShare}
+          disabled={!referralCode}
+          className="flex h-11 items-center gap-2 rounded-xl bg-slate-900 px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <HiOutlineShare className="text-base" />
+          Share Code
+        </button>
+
+      </div>
+
+    </div>
+  );
+}
+
+/* =========================================================
+   STAT CARDS
+========================================================= */
 
 function StatCards({ data }) {
   if (!data) return null;
@@ -296,869 +253,2237 @@ function StatCards({ data }) {
     {
       icon: HiOutlineUserGroup,
       label: "Total Referrals",
-      value: data.referrals,
-      color: "text-teal-700",
+      value: Number(
+        data.referrals || 0
+      ).toLocaleString(),
+      description: "People referred",
+      iconBg: "bg-blue-50",
+      iconColor: "text-blue-600",
+      accent: "bg-blue-500",
     },
     {
       icon: HiOutlineShieldCheck,
       label: "Total Converted",
-      value: data.conversions,
-      color: "text-teal-700",
+      value: Number(
+        data.conversions || 0
+      ).toLocaleString(),
+      description: "Successful investments",
+      iconBg: "bg-emerald-50",
+      iconColor: "text-emerald-600",
+      accent: "bg-emerald-500",
     },
     {
       icon: RiCopperCoinLine,
       label: "Total Earnings",
-      value: `₹${data.totalEarnings}`,
-      color: "text-yellow-600",
+      value: `₹${Number(
+        data.totalEarnings || 0
+      ).toLocaleString()}`,
+      description: "Commission earned",
+      iconBg: "bg-violet-50",
+      iconColor: "text-violet-600",
+      accent: "bg-violet-500",
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
-      {cards.map(({ icon: Icon, label, value, color }) => (
-        <div key={label} className="bg-white rounded-xl p-4 shadow-sm">
-          <Icon className={`text-2xl ${color}`} />
-          <p className="text-xs text-gray-400">{label}</p>
-          <p className="text-lg font-bold">{value}</p>
-        </div>
-      ))}
+    <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+
+      {cards.map(
+        ({
+          icon: Icon,
+          label,
+          value,
+          description,
+          iconBg,
+          iconColor,
+          accent,
+        }) => (
+          <div
+            key={label}
+            className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+          >
+
+            <div className="p-5">
+
+              <div className="flex items-start justify-between">
+
+                <div>
+
+                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                    {label}
+                  </p>
+
+                  <p className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
+                    {value}
+                  </p>
+
+                </div>
+
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconBg} ${iconColor}`}
+                >
+                  <Icon className="text-xl" />
+                </div>
+
+              </div>
+
+              <div className="mt-4 flex items-center gap-1.5 text-[10px] font-medium text-slate-400">
+                <HiOutlineArrowTrendingUp className="text-sm text-slate-400" />
+                {description}
+              </div>
+
+            </div>
+
+            <div
+              className={`absolute bottom-0 left-0 right-0 h-1 ${accent}`}
+            />
+
+          </div>
+        )
+      )}
+
     </div>
   );
 }
+
+/* =========================================================
+   REFERRAL CODE CARD
+========================================================= */
 
 function BrokerCodeCard({ profile }) {
   const [copied, setCopied] = useState(false);
 
-  const copyCode = async () => {
-    try {
-      if (!profile?.referralCode) return;
+  const code =
+    profile?.referralCode || "----";
 
-      await navigator.clipboard.writeText(profile.referralCode);
+  const copyCode = async () => {
+    if (!profile?.referralCode) return;
+
+    try {
+      await navigator.clipboard.writeText(
+        profile.referralCode
+      );
 
       setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch (err) {
-      console.log("Copy failed", err);
+
+      setTimeout(() => {
+        setCopied(false);
+      }, 1600);
+    } catch (error) {
+      console.log("Copy failed", error);
     }
   };
 
-  return (
-    <div className="bg-teal-700 rounded-2xl p-5 flex flex-col gap-4">
-      <h3 className="text-white font-semibold text-sm">
-        Your Broker Code
-      </h3>
-
-      <div className="bg-white/20 rounded-xl px-4 py-3 flex items-center justify-between">
-        <span className="text-white font-bold text-sm">
-          {profile?.referralCode || "----"}
-        </span>
-
-        <button onClick={copyCode} className="text-white">
-          <HiOutlineClipboardDocument />
-        </button>
-      </div>
-
-      {copied && (
-        <p className="text-white text-xs">Code copied!</p>
-      )}
-    </div>
-  );
-}
-
-function ReferralChart() {
-  const [active, setActive] = useState("Monthly");
-  return (
-    <div className="bg-teal-700 text-white rounded-2xl shadow-lg p-6 sm:max-w-md w-full">
-      {/* Title */}
-      <h2 className="text-2xl font-semibold mb-3">How Broker Code Works</h2>
-
-      {/* Content */}
-      <p className="text-sm text-teal-100 leading-relaxed mb-4">
-        Broker code ek unique identifier hota hai jo har broker ko assign kiya
-        jata hai. Jab koi user aapka broker code use karta hai, to uske through
-        hone wale transactions aapke account se link ho jaate hain.
-      </p>
-
-      <p className="text-sm text-teal-100 leading-relaxed mb-4">
-        Isse aap apne referrals, commissions aur activity ko easily track kar
-        sakte ho. Ye system transparency maintain karta hai aur earnings ko
-        automate karta hai.
-      </p>
-
-      {/* Highlight Box */}
-      <div className="bg-teal-800 rounded-xl p-3">
-        <p className="text-xs text-teal-200">
-          💡 Tip: Apna broker code zyada se zyada share karo taaki aapki earning
-          aur network grow ho.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function RecentInvestors({ investors }) {
-  const thClass =
-  "px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-left";
-
-const tdClass =
-  "px-6 py-4 text-sm text-gray-700 text-left align-middle";
-
-  return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
-      
-      {/* HEADER */}
-      <div className="px-6 py-5 border-b bg-gradient-to-r from-gray-50 to-white">
-        <h3 className="font-semibold text-gray-800 text-base">
-          Recent Referred Investors
-        </h3>
-        <p className="text-xs text-gray-400 mt-1">
-          Latest activity from your referral network
-        </p>
-      </div>
-
-      {/* TABLE */}
-      <div className="overflow-x-auto">
-        <table className="w-full table-fixed border-collapse">
-
-          {/* HEAD */}
-          <thead className="bg-gray-50">
-            <tr>
-              <th className={thClass}>Investor</th>
-              <th className={thClass}>Contact</th>
-              <th className={thClass}>Property</th>
-              <th className={thClass}>Amount</th>
-              <th className={thClass}>Date</th>
-              <th className={thClass}>Status</th>
-            </tr>
-          </thead>
-
-          {/* BODY */}
-          <tbody>
-            {investors?.length > 0 ? (
-              investors.map((row, i) => (
-                <tr
-                  key={i}
-                  className="border-b last:border-0 hover:bg-gray-50 transition"
-                >
-                  {/* NAME + AVATAR */}
-                  <td className={tdClass}>
-  <div className="flex items-center gap-3">
-    <div className="w-9 h-9 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center text-xs font-semibold">
-      {row.investorName?.charAt(0)}
-    </div>
-    <span className="font-medium text-gray-800">
-      {row.investorName}
-    </span>
-  </div>
-</td>
-
-                  {/* CONTACT */}
-                  <td className={tdClass}>{row.contact}</td>
-
-                  {/* PROPERTY */}
-                  <td className={`${tdClass} text-gray-600`}>
-                    {row.property}
-                  </td>
-
-                  {/* AMOUNT */}
-                  <td className={`${tdClass} font-semibold text-teal-600`}>
-                    ₹{row.amount}
-                  </td>
-
-                  {/* DATE */}
-                  <td className={tdClass}>
-                    {new Date(row.date).toLocaleDateString()}
-                  </td>
-
-                  {/* STATUS */}
-                  <td className={tdClass}>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        row.status === "Completed"
-                          ? "bg-green-100 text-green-700"
-                          : row.status === "In Process"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-gray-100 text-gray-600"
-                      }`}
-                    >
-                      {row.status}
-                    </span>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="6" className="text-center py-6 text-gray-400">
-                  No investors found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-function CommissionDetails({ commissions }) {
-  const thClass =
-    "px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-left";
-
-  const tdClass =
-    "px-6 py-4 text-sm text-gray-700 text-left align-middle";
-
-  return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-      
-      {/* HEADER */}
-      <div className="px-6 py-5 border-b bg-gradient-to-r from-gray-50 to-white">
-        <h3 className="font-semibold text-gray-800 text-base">
-          Commission Details
-        </h3>
-        <p className="text-xs text-gray-400 mt-1">
-          Track your earnings & payout status
-        </p>
-      </div>
-
-      {/* TABLE */}
-      <div className="overflow-x-auto">
-        <table className="w-full table-fixed border-collapse">
-
-          {/* HEAD (FIXED) */}
-          <thead className="bg-gray-50">
-            <tr>
-              <th className={thClass}>Property</th>
-              <th className={thClass}>Investor</th>
-              <th className={thClass}>Commission</th>
-              <th className={thClass}>Status</th>
-            </tr>
-          </thead>
-
-          {/* BODY */}
-          <tbody>
-            {commissions?.length > 0 ? (
-              commissions.map((row, i) => (
-                <tr
-                  key={i}
-                  className="border-b last:border-0 hover:bg-gray-50 transition"
-                >
-                  {/* PROPERTY */}
-                  <td className={`${tdClass} font-medium text-gray-800 whitespace-nowrap`}>
-                    {row.property}
-                  </td>
-
-                  {/* INVESTOR */}
-                  <td className={tdClass}>
-                    {row.investor}
-                  </td>
-
-                  {/* COMMISSION */}
-                  <td className={`${tdClass} font-semibold text-teal-600`}>
-                    ₹{row.commission}
-                  </td>
-
-                  {/* STATUS */}
-                  <td className={tdClass}>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        row.status === "Paid"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-yellow-100 text-yellow-700"
-                      }`}
-                    >
-                      {row.status}
-                    </span>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="4" className="text-center py-6 text-gray-400">
-                  No commission data available
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-function EarningsSummary({ data }) {
-  if (!data) return null;
-
-  return (
-    <div className="bg-gray-50 rounded-2xl p-5">
-      <h3 className="font-bold mb-2">Earnings Summary</h3>
-
-      <p className="text-xs mb-2">
-        Next payout: {data.nextPayout}
-      </p>
-
-      <p className="text-sm font-semibold mb-2">
-        ₹{data.total} / ₹{data.target}
-      </p>
-
-      <div className="w-full bg-gray-200 h-2 rounded-full">
-        <div
-          className="bg-teal-700 h-2 rounded-full"
-          style={{ width: `${data.percent}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-function ActiveOpportunities() {
-  return (
-    <div className="mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="font-bold text-gray-800 text-base">
-            Active Opportunities
-          </h3>
-          <p className="text-xs text-gray-400">
-            Recommended properties for your network
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 text-gray-500">
-            <HiOutlineChevronLeft className="text-sm" />
-          </button>
-          <button className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 text-gray-500">
-            <HiOutlineChevronRight className="text-sm" />
-          </button>
-        </div>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-        {opportunities.map((opp) => (
-          <div
-            key={opp.name}
-            className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
-          >
-            <div className="relative h-40">
-              <img
-                src={opp.img}
-                alt={opp.name}
-                className="w-full h-full object-cover"
-              />
-              <span
-                className={`absolute top-3 left-3 ${opp.tagColor} text-white text-xs font-semibold px-2.5 py-1 rounded-full`}
-              >
-                {opp.tag}
-              </span>
-              <span
-                className={`absolute bottom-3 left-3 ${opp.roiColor} text-white text-xs font-semibold px-2.5 py-1 rounded-full`}
-              >
-                {opp.roi}
-              </span>
-            </div>
-            <div className="p-4 flex items-end justify-between">
-              <div>
-                <p className="font-bold text-gray-800 text-sm">{opp.name}</p>
-                <p className="text-xs text-gray-400 mb-2">{opp.location}</p>
-                <p className="text-xs text-gray-400">SHARE PRICE</p>
-                <p className="font-bold text-gray-800 text-sm">
-                  {opp.price}{" "}
-                  <span className="text-gray-400 font-normal">/ share</span>
-                </p>
-              </div>
-              <button className="w-9 h-9 bg-yellow-400 rounded-xl flex items-center justify-center hover:bg-yellow-300 transition-colors flex-shrink-0">
-                <HiOutlineShare className="text-gray-800 text-base" />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function Header({ setMobileOpen, profile }) {
-  
-  
-
-  const handleShare = () => {
+  const shareCode = () => {
     if (!profile?.referralCode) return;
-  
-    const text = `Join using my referral code: ${profile.referralCode}
-  ${profile.shareLink || ""}`;
-  
+
+    const text = `Join using my referral code: ${profile.referralCode} ${
+      profile.shareLink || ""
+    }`;
+
     window.open(
-      `https://wa.me/?text=${encodeURIComponent(text)}`
+      `https://wa.me/?text=${encodeURIComponent(
+        text
+      )}`,
+      "_blank"
     );
   };
 
   return (
-    <div className="flex items-center justify-between mb-6">
-      
-      <div className="flex items-center gap-3">
-        <button
-          className="lg:hidden"
-          onClick={() => setMobileOpen(prev => !prev)}
-        >
-          <HiOutlineSquares2X2 className="text-2xl" />
-        </button>
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 shadow-lg">
 
-        <div>
-          <h1 className="text-2xl font-bold">
-            Broker Dashboard
-          </h1>
-          <p className="text-sm text-gray-400">
-            Track referrals & earnings
-          </p>
+      {/* decorative circles */}
+
+      <div className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-emerald-400/10" />
+
+      <div className="absolute -bottom-16 right-16 h-40 w-40 rounded-full bg-blue-400/10" />
+
+      <div className="relative">
+
+        <div className="flex items-start justify-between">
+
+          <div>
+
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-400">
+              Your Partner Code
+            </p>
+
+            <h2 className="mt-1 text-lg font-bold text-white">
+              Share & Grow
+            </h2>
+
+            <p className="mt-1 max-w-md text-xs leading-relaxed text-slate-400">
+              Share your referral code with investors
+              and track every successful conversion.
+            </p>
+
+          </div>
+
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-emerald-400">
+            <HiOutlineShare className="text-lg" />
+          </div>
+
         </div>
-      </div>
 
-      <button
-        onClick={handleShare}
-        className="bg-teal-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold"
-      >
-        <HiOutlineShare />
-        Share Promo Code
-      </button>
+        {/* CODE */}
+
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+
+          <div className="flex flex-1 items-center justify-between rounded-xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur">
+
+            <div>
+
+              <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
+                Referral Code
+              </p>
+
+              <p className="mt-1 text-base font-bold tracking-[0.15em] text-white">
+                {code}
+              </p>
+
+            </div>
+
+            <button
+              type="button"
+              onClick={copyCode}
+              className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-slate-300 transition hover:bg-white/20 hover:text-white"
+            >
+              {copied ? (
+                <HiOutlineCheckCircle className="text-emerald-400" />
+              ) : (
+                <HiOutlineClipboardDocument />
+              )}
+            </button>
+
+          </div>
+
+          <button
+            type="button"
+            onClick={shareCode}
+            disabled={!profile?.referralCode}
+            className="flex h-12 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <HiOutlineShare className="text-base" />
+            Share Referral
+          </button>
+
+        </div>
+
+        {copied && (
+          <p className="mt-2 text-[10px] font-medium text-emerald-400">
+            Referral code copied successfully.
+          </p>
+        )}
+
+      </div>
     </div>
   );
 }
 
-export default function BrokerDashboard() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [active, setActive] = useState("overview");
-  console.log("dd", active);
-  const [dashboard, setDashboard] = useState(null);
-const [profile, setProfile] = useState(null);
-const [investors, setInvestors] = useState([]);
-const [commissions, setCommissions] = useState([]);
-const [earnings, setEarnings] = useState(null);
-const [referrals, setReferrals] = useState([]);
-const [converted, setConverted] = useState([]);
+/* =========================================================
+   PERFORMANCE CARD
+========================================================= */
 
-const thClass =
-  "px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-center";
-  const tdClass = "px-6 py-4 text-sm text-gray-700 text-center";
+function PerformanceCard({ dashboard }) {
+  const referrals = Number(
+    dashboard?.referrals || 0
+  );
 
+  const conversions = Number(
+    dashboard?.conversions || 0
+  );
 
-useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const [
-        dash,
-        prof,
-        inv,
-        comm,
-        earn,
-        ref,
-        conv
-      ] = await Promise.all([
-        axios.get("/api/brokers/dashboard"),
-        axios.get("/api/brokers/profile"),
-        axios.get("/api/brokers/referred-investors"),
-        axios.get("/api/brokers/commissions"),
-        axios.get("/api/brokers/earnings-summary"),
-        axios.get("/api/brokers/total-referrals"),
-        axios.get("/api/brokers/total-converted")    
-      ]);
-
-      setDashboard(dash.data);
-      setProfile(prof.data);
-      setInvestors(inv.data);
-      setCommissions(comm.data);
-      setEarnings(earn.data);
-      setReferrals(ref.data);
-      setConverted(conv.data);
-
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  fetchData();
-}, []);
-
-const handleLogout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
-  window.location.href = "/"; // ya "/login"
-};
-
-const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const rate =
+    referrals > 0
+      ? Math.min(
+          100,
+          (conversions / referrals) * 100
+        )
+      : 0;
 
   return (
-    <>
-    <div className="flex bg-gray-50 font-sans   ">
-      <aside
-        className={
-          // ` sticky top-[11%] h-[90vh] w-52 bg-gray-50 border-r border-gray-200
-          // flex flex-col z-10
-          // ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
-          // lg:translate-x-0 lg:flex-shrink-0`
-          `fixed lg:sticky top-0 lg:top-[11%] left-0
-          h-full lg:h-[90vh] w-52 bg-gray-50 border-r border-gray-200
-          flex flex-col z-40
-          transform transition-transform duration-300
-          ${mobileOpen ? "translate-x-0" : "-translate-x-full"} 
-          lg:translate-x-0`
-        }
-      >
-        <div className="flex items-center gap-2 px-4 py-5 border-bborder-gray-200">
-          <div className="w-8 h-8 bg-teal-700 rounded-lg flex items-center justify-center">
-            <HiBriefcase className="text-white text-sm" />
-          </div>
-          <div className="flex  items-center  justify-around gap-8">
-            <div>
-              <p className="text-sm whitespace-nowrap font-semibold text-gray-800 leading-tight">
-                Broker Portal
-              </p>
-              <p className="text-xs text-gray-400">Premium Tier</p>
-            </div>
-            <div className="border-2 lg:hidden block">
-              <RxCross1
-                className="text-xl "
-                onClick={() => setMobileOpen(false)}
-              />
-            </div>
-          </div>
-        </div>
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
 
-        {/* <nav className="flex-1 py-4 px-2">
-          {navItems.map(({ icon: Icon, label, active, type }) => (
-            <button key={label} onClick={() => setActive(type)} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 text-sm font-medium transition-colors
-              ${type ? "bg-teal-50 text-teal-700" : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"}`}>
-              <Icon className="text-lg flex-shrink-0" />
-              {label}
-            </button>
-          ))}
-        </nav> */}
+      <div className="flex items-start justify-between">
 
-        <nav className="flex-1 py-4 px-2">
-          {navItems.map(({ icon: Icon, label, type }) => (
-            <button
-              key={label}
-              onClick={() => {setActive(type)
-                setMobileOpen(false)}}
-               
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 text-sm font-medium transition-colors
-                  ${
-                    active === type
-                      ? "bg-teal-50 text-teal-700"
-                      : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-                  }`}
-            >
-              <Icon className="text-lg flex-shrink-0" />
-              {label}
-            </button>
-          ))}
-        </nav>
-
-        <div className="px-2 pb-4 border-t border-gray-200 pt-3">
-          {/* <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-500 hover:bg-gray-50 mb-1">
-            <HiOutlineQuestionMarkCircle className="text-lg" /> Help Center
-          </button> */}
-          <button
-  onClick={() => setShowLogoutConfirm(true)}
-  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-500 hover:bg-gray-50"
->
-  <HiArrowRightOnRectangle className="text-lg" /> Sign Out
-</button>
-        </div>
-      </aside>
-
-      {active === "referral" && (
-  <div className="flex-1 p-4 sm:p-6 lg:p-8">
-    
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-      
-      {/* HEADER */}
-      <div className="px-6 py-5 border-b bg-gradient-to-r from-gray-50 to-white flex justify-between items-center">
         <div>
-          <h3 className="font-semibold text-gray-800 text-base">
-            Total Referrals
-          </h3>
-          <p className="text-xs text-gray-400 mt-1">
-            All users referred by you
-          </p>
-        </div>
-      </div>
 
-      {/* TABLE */}
-      <div className="overflow-x-auto">
-        <table className="w-full table-fixed border-collapse">
+          <div className="flex items-center gap-2">
 
-          <thead className="bg-gray-50">
-            <tr>
-              <th className={thClass}>User</th>
-              <th className={thClass}>Contact</th>
-            
-              <th className={thClass}>Joined</th>
-              <th className={thClass}>Status</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {referrals.map((row, i) => (
-              <tr
-                key={i}
-                className="border-b last:border-0 hover:bg-gray-50 transition"
-              >
-                {/* USER */}
-                <td className={tdClass}>
-  <div className="flex items-center justify-center gap-3">
-    <div className="w-9 h-9 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center text-xs font-semibold">
-      {row.name?.charAt(0)}
-    </div>
-    <span className="font-medium text-gray-800">
-      {row.name}
-    </span>
-  </div>
-</td>
-
-                <td className={tdClass}>{row.contact}</td>
-                {/* <td className={tdClass}>{row.email}</td> */}
-
-                <td className={tdClass}>
-                  {new Date(row.signupDate).toLocaleDateString()}
-                </td>
-
-                <td className={tdClass}>
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      row.status === "Converted"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-100 text-gray-600"
-                    }`}
-                  >
-                    {row.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-)}
-
-{active === "converted" && (
-  <div className="flex-1 p-4 sm:p-6 lg:p-8">
-
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-
-      {/* HEADER */}
-      <div className="px-6 py-5 border-b bg-gradient-to-r from-gray-50 to-white">
-        <h3 className="font-semibold text-gray-800 text-base">
-          Total Converted
-        </h3>
-        <p className="text-xs text-gray-400 mt-1">
-          Users who completed investment
-        </p>
-      </div>
-
-      {/* TABLE */}
-      <div className="overflow-x-auto">
-        <table className="w-full table-fixed border-collapse">
-
-          <thead className="bg-gray-50">
-            <tr>
-              <th className={thClass}>Investor</th>
-              <th className={thClass}>Contact</th>
-              <th className={thClass}>Property</th>
-              <th className={thClass}>Amount</th>
-              <th className={thClass}>Date</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {converted.map((row, i) => (
-              <tr
-                key={i}
-                className="border-b last:border-0 hover:bg-gray-50 transition"
-              >
-                {/* NAME */}
-                <td className={tdClass}>
-                  <div className="flex items-center justify-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center text-xs font-semibold">
-                      {row.name?.charAt(0)}
-                    </div>
-                    <span className="font-medium text-gray-800">
-                      {row.name}
-                    </span>
-                  </div>
-                </td>
-
-                <td className={tdClass}>{row.contact}</td>
-                <td className={tdClass}>{row.property}</td>
-
-                <td className={`${tdClass} font-semibold text-teal-600`}>
-                  ₹{row.amount}
-                </td>
-
-                <td className={tdClass}>
-                  {new Date(row.date).toLocaleDateString()}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-
-        </table>
-      </div>
-    </div>
-  </div>
-)}
-
-
-{active === "commission" && (
-  <div className="flex-1 p-4 sm:p-6 lg:p-8">
-
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-
-      {/* HEADER */}
-      <div className="px-6 py-5 border-b bg-gradient-to-r from-gray-50 to-white">
-        <h3 className="font-semibold text-gray-800 text-base">
-          Commission Details
-        </h3>
-        <p className="text-xs text-gray-400 mt-1">
-          Complete commission history
-        </p>
-      </div>
-
-      {/* TABLE */}
-      <div className="overflow-x-auto">
-        <table className="w-full table-fixed border-collapse">
-
-          <thead className="bg-gray-50">
-            <tr>
-              <th className={thClass}>Property</th>
-              <th className={thClass}>Investor</th>
-              <th className={thClass}>Commission</th>
-              <th className={thClass}>Status</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {commissions.map((row, i) => (
-              <tr
-                key={i}
-                className="border-b last:border-0 hover:bg-gray-50 transition"
-              >
-                <td className={tdClass}>{row.property}</td>
-
-                <td className={tdClass}>
-                  <div className="flex items-center justify-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center text-xs font-semibold">
-                      {row.investor?.charAt(0)}
-                    </div>
-                    <span className="font-medium text-gray-800">
-                      {row.investor}
-                    </span>
-                  </div>
-                </td>
-
-                <td className={`${tdClass} font-semibold text-teal-600`}>
-                  ₹{row.commission}
-                </td>
-
-                <td className={tdClass}>
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      row.status === "Paid"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {row.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-
-        </table>
-      </div>
-    </div>
-  </div>
-)}
-
-      {active === "overview" && (
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0">
-          <Header setMobileOpen={setMobileOpen} profile={profile} />
-          <StatCards data={dashboard} />
-
-          <div className="flex  flex-col sm:flex-row  gap-4 lg:gap-14 xl:gap-24 mb-6">
-            <div className="flex-1">
-            <BrokerCodeCard profile={profile} />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50">
+              <HiOutlineArrowTrendingUp className="text-lg text-emerald-600" />
             </div>
-            <div className="flex-1">
-              <ReferralChart />
-            </div>
-          </div>
 
-          <RecentInvestors investors={investors} />
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-            <div className="lg:col-span-2">
-            <CommissionDetails commissions={commissions.slice(0, 5)} />
-            </div>
             <div>
-            <EarningsSummary data={earnings} />
+
+              <h3 className="text-sm font-bold text-slate-900">
+                Referral Performance
+              </h3>
+
+              <p className="text-[10px] text-slate-400">
+                Conversion overview
+              </p>
+
             </div>
+
           </div>
 
-          {/* <ActiveOpportunities /> */}
-        </main>
-      )}
+        </div>
 
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-          onClick={() => setMobileOpen(false)}
-        ></div>
-      )}
+        <span className="rounded-lg bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">
+          {rate.toFixed(1)}%
+        </span>
+
+      </div>
+
+      <div className="mt-6">
+
+        <div className="mb-2 flex items-center justify-between">
+
+          <span className="text-[10px] font-medium text-slate-400">
+            Referral conversion
+          </span>
+
+          <span className="text-[10px] font-bold text-slate-700">
+            {conversions} / {referrals}
+          </span>
+
+        </div>
+
+        <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+
+          <div
+            className="h-full rounded-full bg-emerald-500 transition-all duration-700"
+            style={{
+              width: `${rate}%`,
+            }}
+          />
+
+        </div>
+
+      </div>
+
+      <div className="mt-5 grid grid-cols-2 gap-3">
+
+        <div className="rounded-xl bg-slate-50 p-3">
+
+          <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
+            Referrals
+          </p>
+
+          <p className="mt-1 text-lg font-bold text-slate-900">
+            {referrals}
+          </p>
+
+        </div>
+
+        <div className="rounded-xl bg-emerald-50 p-3">
+
+          <p className="text-[9px] font-bold uppercase tracking-wider text-emerald-600">
+            Converted
+          </p>
+
+          <p className="mt-1 text-lg font-bold text-emerald-700">
+            {conversions}
+          </p>
+
+        </div>
+
+      </div>
+
     </div>
+  );
+}
 
-{showLogoutConfirm && (
-  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+/* =========================================================
+   RECENT INVESTORS
+========================================================= */
 
-    <div className="bg-white rounded-2xl p-6 w-[90%] max-w-sm shadow-lg">
+function RecentInvestors({ investors }) {
+  const [page, setPage] = useState(1);
 
-      <h3 className="text-lg font-semibold text-gray-800 mb-2">
-        Sign Out
-      </h3>
+  const perPage = 5;
 
-      <p className="text-sm text-gray-500 mb-5">
-        Are you sure you want to sign out?
-      </p>
+  const totalPages =
+    Math.ceil(
+      (investors?.length || 0) /
+        perPage
+    ) || 1;
 
-      <div className="flex justify-end gap-3">
-        
-        {/* Cancel */}
+  const currentInvestors =
+    investors?.slice(
+      (page - 1) * perPage,
+      page * perPage
+    ) || [];
+
+  useEffect(() => {
+    setPage(1);
+  }, [investors]);
+
+  const getPages = () => {
+    if (totalPages <= 5) {
+      return Array.from(
+        { length: totalPages },
+        (_, i) => i + 1
+      );
+    }
+
+    const pages = [1];
+
+    if (page > 3) {
+      pages.push("left");
+    }
+
+    const start = Math.max(
+      2,
+      page - 1
+    );
+
+    const end = Math.min(
+      totalPages - 1,
+      page + 1
+    );
+
+    for (
+      let i = start;
+      i <= end;
+      i++
+    ) {
+      pages.push(i);
+    }
+
+    if (page < totalPages - 2) {
+      pages.push("right");
+    }
+
+    pages.push(totalPages);
+
+    return pages;
+  };
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+      {/* HEADER */}
+
+      <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+
+        <div className="flex items-center gap-3">
+
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50">
+            <HiOutlineUserGroup className="text-lg text-blue-600" />
+          </div>
+
+          <div>
+
+            <h3 className="text-sm font-bold text-slate-900">
+              Recent Referred Investors
+            </h3>
+
+            <p className="mt-0.5 text-[10px] text-slate-400">
+              Latest activity from your referral network
+            </p>
+
+          </div>
+
+        </div>
+
+        <span className="w-fit rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-500">
+          {investors?.length || 0} Investors
+        </span>
+
+      </div>
+
+      {/* TABLE */}
+
+      <div className="overflow-x-auto">
+
+        <table className="w-full min-w-[760px]">
+
+          <thead className="bg-slate-50/70">
+
+            <tr>
+
+              <th className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Investor
+              </th>
+
+              <th className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              Email
+              </th>
+
+              <th className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Property
+              </th>
+
+              <th className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Amount
+              </th>
+
+              <th className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Date
+              </th>
+
+              <th className="px-5 py-3 text-right text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Status
+              </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            {currentInvestors.length > 0 ? (
+              currentInvestors.map(
+                (row, index) => {
+
+                  const name =
+                    row?.investorName ||
+                    row?.name ||
+                    "Unknown";
+
+                  return (
+                    <tr
+                      key={
+                        row?._id ||
+                        row?.id ||
+                        index
+                      }
+                      className="border-t border-slate-100 transition hover:bg-slate-50/70"
+                    >
+
+                      {/* INVESTOR */}
+
+                      <td className="px-5 py-4">
+
+                        <div className="flex items-center gap-3">
+
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-xs font-bold text-blue-700">
+                            {name
+                              ?.charAt(0)
+                              ?.toUpperCase()}
+                          </div>
+
+                          <div>
+
+                            <p className="text-xs font-semibold text-slate-800">
+                              {name}
+                            </p>
+
+                          </div>
+
+                        </div>
+
+                      </td>
+
+                      {/* CONTACT */}
+
+                      <td className="px-5 py-4 text-xs text-slate-500">
+                      {row?.email || "—"}
+                      </td>
+
+                      {/* PROPERTY */}
+
+                      <td className="max-w-[180px] px-5 py-4">
+
+                        <p className="truncate text-xs font-medium text-slate-700">
+                          {row?.property ||
+                            "—"}
+                        </p>
+
+                      </td>
+
+                      {/* AMOUNT */}
+
+                      <td className="px-5 py-4">
+
+                        <span className="text-xs font-bold text-emerald-600">
+                          ₹
+                          {Number(
+                            row?.amount || 0
+                          ).toLocaleString()}
+                        </span>
+
+                      </td>
+
+                      {/* DATE */}
+
+                      <td className="px-5 py-4">
+
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                          <HiOutlineCalendar className="text-slate-400" />
+
+                          {row?.date
+                            ? new Date(
+                                row.date
+                              ).toLocaleDateString(
+                                "en-IN"
+                              )
+                            : "—"}
+                        </div>
+
+                      </td>
+
+                      {/* STATUS */}
+
+                      <td className="px-5 py-4 text-right">
+                        <StatusBadge
+                          status={
+                            row?.status ||
+                            "Pending"
+                          }
+                        />
+                      </td>
+
+                    </tr>
+                  );
+                }
+              )
+            ) : (
+              <tr>
+
+                <td
+                  colSpan={6}
+                  className="py-14 text-center"
+                >
+
+                  <div className="mx-auto flex max-w-xs flex-col items-center">
+
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
+                      <HiOutlineUserGroup className="text-lg text-slate-400" />
+                    </div>
+
+                    <p className="mt-3 text-xs font-semibold text-slate-600">
+                      No referred investors yet
+                    </p>
+
+                    <p className="mt-1 text-[10px] text-slate-400">
+                      Share your referral code to start building your network.
+                    </p>
+
+                  </div>
+
+                </td>
+
+              </tr>
+            )}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      {/* PAGINATION */}
+
+      {(investors?.length || 0) > 0 && (
+        <div className="flex flex-col gap-3 border-t border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+
+          <p className="text-[10px] text-slate-500">
+
+            Showing{" "}
+
+            <span className="font-bold text-slate-800">
+              {(page - 1) *
+                  perPage +
+                1}
+            </span>
+
+            {" "}to{" "}
+
+            <span className="font-bold text-slate-800">
+              {Math.min(
+                page * perPage,
+                investors.length
+              )}
+            </span>
+
+            {" "}of{" "}
+
+            <span className="font-bold text-slate-800">
+              {investors.length}
+            </span>
+
+          </p>
+
+          <div className="flex items-center gap-1">
+
+            <button
+              type="button"
+              disabled={page === 1}
+              onClick={() =>
+                setPage(
+                  (prev) =>
+                    Math.max(
+                      1,
+                      prev - 1
+                    )
+                )
+              }
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 disabled:opacity-40"
+            >
+              <HiOutlineChevronLeft />
+            </button>
+
+            {getPages().map(
+              (item, index) => {
+
+                if (
+                  item === "left" ||
+                  item === "right"
+                ) {
+                  return (
+                    <span
+                      key={`${item}-${index}`}
+                      className="flex h-8 min-w-6 items-center justify-center text-xs font-bold text-slate-400"
+                    >
+                      ...
+                    </span>
+                  );
+                }
+
+                return (
+                  <button
+                    type="button"
+                    key={item}
+                    onClick={() =>
+                      setPage(item)
+                    }
+                    className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-[10px] font-bold transition ${
+                      page === item
+                        ? "bg-slate-900 text-white"
+                        : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    {item}
+                  </button>
+                );
+              }
+            )}
+
+            <button
+              type="button"
+              disabled={
+                page === totalPages
+              }
+              onClick={() =>
+                setPage(
+                  (prev) =>
+                    Math.min(
+                      totalPages,
+                      prev + 1
+                    )
+                )
+              }
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 disabled:opacity-40"
+            >
+              <HiOutlineChevronRight />
+            </button>
+
+          </div>
+
+        </div>
+      )}
+
+    </div>
+  );
+}
+
+/* =========================================================
+   COMMISSION DETAILS
+========================================================= */
+
+function CommissionDetails({
+  commissions,
+}) {
+  const [page, setPage] = useState(1);
+
+  const perPage = 5;
+
+  const totalPages =
+    Math.ceil(
+      (commissions?.length || 0) /
+        perPage
+    ) || 1;
+
+  const currentCommissions =
+    commissions?.slice(
+      (page - 1) * perPage,
+      page * perPage
+    ) || [];
+
+  useEffect(() => {
+    setPage(1);
+  }, [commissions]);
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+      {/* HEADER */}
+
+      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+
+        <div className="flex items-center gap-3">
+
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-50">
+            <RiMoneyRupeeCircleLine className="text-lg text-violet-600" />
+          </div>
+
+          <div>
+
+            <h3 className="text-sm font-bold text-slate-900">
+              Commission History
+            </h3>
+
+            <p className="mt-0.5 text-[10px] text-slate-400">
+              Track commission earned from your referrals
+            </p>
+
+          </div>
+
+        </div>
+
+        <span className="hidden rounded-lg bg-violet-50 px-2.5 py-1 text-[10px] font-semibold text-violet-700 sm:block">
+          {commissions?.length || 0} Records
+        </span>
+
+      </div>
+
+      {/* TABLE */}
+
+      <div className="overflow-x-auto">
+
+        <table className="w-full min-w-[600px]">
+
+          <thead className="bg-slate-50/70">
+
+            <tr>
+
+              <th className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Property
+              </th>
+
+              <th className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Investor
+              </th>
+
+              <th className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Commission
+              </th>
+
+              <th className="px-5 py-3 text-right text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Status
+              </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            {currentCommissions.length > 0 ? (
+              currentCommissions.map(
+                (row, index) => {
+
+                  const investor =
+                    row?.investor ||
+                    "Unknown";
+
+                  return (
+                    <tr
+                      key={
+                        row?._id ||
+                        row?.id ||
+                        index
+                      }
+                      className="border-t border-slate-100 transition hover:bg-slate-50/70"
+                    >
+
+                      <td className="px-5 py-4">
+
+                        <p className="max-w-[200px] truncate text-xs font-semibold text-slate-800">
+                          {row?.property ||
+                            "—"}
+                        </p>
+
+                      </td>
+
+                      <td className="px-5 py-4">
+
+                        <div className="flex items-center gap-2.5">
+
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-[10px] font-bold text-slate-600">
+                            {investor
+                              ?.charAt(0)
+                              ?.toUpperCase()}
+                          </div>
+
+                          <span className="text-xs font-medium text-slate-600">
+                            {investor}
+                          </span>
+
+                        </div>
+
+                      </td>
+
+                      <td className="px-5 py-4">
+
+                        <div className="flex items-center gap-1.5">
+
+                          <RiCopperCoinLine className="text-sm text-emerald-500" />
+
+                          <span className="text-xs font-bold text-emerald-600">
+                            ₹
+                            {Number(
+                              row?.commission ||
+                                0
+                            ).toLocaleString()}
+                          </span>
+
+                        </div>
+
+                      </td>
+
+                      <td className="px-5 py-4 text-right">
+
+                        <StatusBadge
+                          status={
+                            row?.status ||
+                            "Pending"
+                          }
+                        />
+
+                      </td>
+
+                    </tr>
+                  );
+                }
+              )
+            ) : (
+              <tr>
+
+                <td
+                  colSpan={4}
+                  className="py-14 text-center"
+                >
+
+                  <div className="mx-auto flex max-w-xs flex-col items-center">
+
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
+                      <RiMoneyRupeeCircleLine className="text-lg text-slate-400" />
+                    </div>
+
+                    <p className="mt-3 text-xs font-semibold text-slate-600">
+                      No commission records
+                    </p>
+
+                    <p className="mt-1 text-[10px] text-slate-400">
+                      Commission history will appear here after successful referrals.
+                    </p>
+
+                  </div>
+
+                </td>
+
+              </tr>
+            )}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      {/* PAGINATION */}
+
+      {(commissions?.length || 0) > perPage && (
+        <div className="flex items-center justify-between border-t border-slate-100 px-5 py-3">
+
+          <p className="text-[10px] text-slate-400">
+            Page{" "}
+            <span className="font-bold text-slate-700">
+              {page}
+            </span>{" "}
+            of{" "}
+            <span className="font-bold text-slate-700">
+              {totalPages}
+            </span>
+          </p>
+
+          <div className="flex items-center gap-1">
+
+            <button
+              type="button"
+              disabled={page === 1}
+              onClick={() =>
+                setPage(
+                  (prev) =>
+                    Math.max(
+                      1,
+                      prev - 1
+                    )
+                )
+              }
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40"
+            >
+              <HiOutlineChevronLeft />
+            </button>
+
+            <button
+              type="button"
+              disabled={
+                page === totalPages
+              }
+              onClick={() =>
+                setPage(
+                  (prev) =>
+                    Math.min(
+                      totalPages,
+                      prev + 1
+                    )
+                )
+              }
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40"
+            >
+              <HiOutlineChevronRight />
+            </button>
+
+          </div>
+
+        </div>
+      )}
+
+    </div>
+  );
+}
+
+/* =========================================================
+   EARNINGS SUMMARY
+========================================================= */
+
+function EarningsSummary({ data }) {
+  if (!data) return null;
+
+  const total = Number(
+    data.total || 0
+  );
+
+  const target = Number(
+    data.target || 0
+  );
+
+  const percent =
+    target > 0
+      ? Math.min(
+          100,
+          (total / target) * 100
+        )
+      : Number(data.percent || 0);
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+
+      <div className="flex items-start justify-between">
+
+        <div className="flex items-center gap-3">
+
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50">
+            <HiOutlineClock className="text-lg text-amber-600" />
+          </div>
+
+          <div>
+
+            <h3 className="text-sm font-bold text-slate-900">
+              Earnings Summary
+            </h3>
+
+            <p className="mt-0.5 text-[10px] text-slate-400">
+              Current payout progress
+            </p>
+
+          </div>
+
+        </div>
+
+        <span className="rounded-lg bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700">
+          {percent.toFixed(0)}%
+        </span>
+
+      </div>
+
+      <div className="mt-6">
+
+        <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400">
+          Current Earnings
+        </p>
+
+        <p className="mt-1 text-xl font-bold text-slate-900">
+          ₹{total.toLocaleString()}
+        </p>
+
+      </div>
+
+      {target > 0 && (
+        <>
+          <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
+
+            <div
+              className="h-full rounded-full bg-amber-500 transition-all duration-700"
+              style={{
+                width: `${percent}%`,
+              }}
+            />
+
+          </div>
+
+          <div className="mt-2 flex justify-between">
+
+            <span className="text-[10px] text-slate-400">
+              Progress
+            </span>
+
+            <span className="text-[10px] font-semibold text-slate-600">
+              ₹{total.toLocaleString()} / ₹
+              {target.toLocaleString()}
+            </span>
+
+          </div>
+        </>
+      )}
+
+      <div className="mt-5 flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-3">
+
+        <HiOutlineCalendar className="text-sm text-slate-400" />
+
+        <div>
+
+          <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
+            Next Payout
+          </p>
+
+          <p className="mt-0.5 text-xs font-semibold text-slate-700">
+            {data.nextPayout || "To be announced"}
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
+
+/* =========================================================
+   REFERRAL LIST
+========================================================= */
+
+function ReferralList({
+  referrals,
+}) {
+  const [page, setPage] = useState(1);
+
+  const perPage = 6;
+
+  const totalPages =
+    Math.ceil(
+      (referrals?.length || 0) /
+        perPage
+    ) || 1;
+
+  const current =
+    referrals?.slice(
+      (page - 1) * perPage,
+      page * perPage
+    ) || [];
+
+  useEffect(() => {
+    setPage(1);
+  }, [referrals]);
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+      <div className="border-b border-slate-100 px-5 py-4">
+
+        <div className="flex items-center gap-3">
+
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50">
+            <HiOutlineUserGroup className="text-lg text-blue-600" />
+          </div>
+
+          <div>
+
+            <h3 className="text-sm font-bold text-slate-900">
+              Total Referrals
+            </h3>
+
+            <p className="mt-0.5 text-[10px] text-slate-400">
+              People who joined through your referral
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div className="overflow-x-auto">
+
+        <table className="w-full min-w-[620px]">
+
+          <thead className="bg-slate-50/70">
+
+            <tr>
+
+              <th className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                User
+              </th>
+
+              <th className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              Email
+              </th>
+
+              <th className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Joined
+              </th>
+
+              <th className="px-5 py-3 text-right text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Status
+              </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            {current.length > 0 ? (
+              current.map(
+                (row, index) => {
+
+                  const name =
+                    row?.name ||
+                    "Unknown";
+
+                  return (
+                    <tr
+                      key={
+                        row?._id ||
+                        row?.id ||
+                        index
+                      }
+                      className="border-t border-slate-100 hover:bg-slate-50/70"
+                    >
+
+                      <td className="px-5 py-4">
+
+                        <div className="flex items-center gap-3">
+
+                          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-xs font-bold text-blue-700">
+                            {name
+                              ?.charAt(0)
+                              ?.toUpperCase()}
+                          </div>
+
+                          <span className="text-xs font-semibold text-slate-800">
+                            {name}
+                          </span>
+
+                        </div>
+
+                      </td>
+
+                      <td className="px-5 py-4 text-xs text-slate-500">
+                      {row?.email || "—"}
+                      </td>
+
+                      <td className="px-5 py-4">
+
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500">
+
+                          <HiOutlineCalendar className="text-slate-400" />
+
+                          {row?.signupDate
+                            ? new Date(
+                                row.signupDate
+                              ).toLocaleDateString(
+                                "en-IN"
+                              )
+                            : "—"}
+
+                        </div>
+
+                      </td>
+
+                      <td className="px-5 py-4 text-right">
+
+                        <StatusBadge
+                          status={
+                            row?.status ||
+                            "Referred"
+                          }
+                        />
+
+                      </td>
+
+                    </tr>
+                  );
+                }
+              )
+            ) : (
+              <tr>
+
+                <td
+                  colSpan={4}
+                  className="py-14 text-center"
+                >
+
+                  <p className="text-xs font-semibold text-slate-600">
+                    No referrals found
+                  </p>
+
+                  <p className="mt-1 text-[10px] text-slate-400">
+                    Your referred users will appear here.
+                  </p>
+
+                </td>
+
+              </tr>
+            )}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      {(referrals?.length || 0) >
+        perPage && (
+        <div className="flex items-center justify-between border-t border-slate-100 px-5 py-3">
+
+          <p className="text-[10px] text-slate-400">
+            Page {page} of{" "}
+            {totalPages}
+          </p>
+
+          <div className="flex items-center gap-1">
+
+            <button
+              type="button"
+              disabled={page === 1}
+              onClick={() =>
+                setPage(
+                  (prev) =>
+                    Math.max(
+                      1,
+                      prev - 1
+                    )
+                )
+              }
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40"
+            >
+              <HiOutlineChevronLeft />
+            </button>
+
+            <button
+              type="button"
+              disabled={
+                page === totalPages
+              }
+              onClick={() =>
+                setPage(
+                  (prev) =>
+                    Math.min(
+                      totalPages,
+                      prev + 1
+                    )
+                )
+              }
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40"
+            >
+              <HiOutlineChevronRight />
+            </button>
+
+          </div>
+
+        </div>
+      )}
+
+    </div>
+  );
+}
+
+/* =========================================================
+   CONVERTED LIST
+========================================================= */
+
+function ConvertedList({
+  converted,
+}) {
+  const [page, setPage] = useState(1);
+
+  const perPage = 5;
+
+  const totalPages =
+    Math.ceil(
+      (converted?.length || 0) /
+        perPage
+    ) || 1;
+
+  const current =
+    converted?.slice(
+      (page - 1) * perPage,
+      page * perPage
+    ) || [];
+
+  useEffect(() => {
+    setPage(1);
+  }, [converted]);
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+      <div className="border-b border-slate-100 px-5 py-4">
+
+        <div className="flex items-center gap-3">
+
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50">
+            <HiOutlineShieldCheck className="text-lg text-emerald-600" />
+          </div>
+
+          <div>
+
+            <h3 className="text-sm font-bold text-slate-900">
+              Total Converted
+            </h3>
+
+            <p className="mt-0.5 text-[10px] text-slate-400">
+              Referred users who completed investments
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div className="overflow-x-auto">
+
+        <table className="w-full min-w-[720px]">
+
+          <thead className="bg-slate-50/70">
+
+            <tr>
+
+              <th className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Investor
+              </th>
+
+              <th className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              Email
+              </th>
+
+              <th className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Property
+              </th>
+
+              <th className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Amount
+              </th>
+
+              <th className="px-5 py-3 text-right text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Date
+              </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            {current.length > 0 ? (
+              current.map(
+                (row, index) => {
+
+                  const name =
+                    row?.name ||
+                    "Unknown";
+
+                  return (
+                    <tr
+                      key={
+                        row?._id ||
+                        row?.id ||
+                        index
+                      }
+                      className="border-t border-slate-100 hover:bg-slate-50/70"
+                    >
+
+                      <td className="px-5 py-4">
+
+                        <div className="flex items-center gap-3">
+
+                          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-xs font-bold text-emerald-700">
+                            {name
+                              ?.charAt(0)
+                              ?.toUpperCase()}
+                          </div>
+
+                          <span className="text-xs font-semibold text-slate-800">
+                            {name}
+                          </span>
+
+                        </div>
+
+                      </td>
+
+                      <td className="px-5 py-4 text-xs text-slate-500">
+                      {row?.email || "—"}
+                      </td>
+
+
+
+                      <td className="max-w-[190px] px-5 py-4">
+
+                        <p className="truncate text-xs font-medium text-slate-700">
+                          {row?.property ||
+                            "—"}
+                        </p>
+
+                      </td>
+
+                      <td className="px-5 py-4">
+
+                        <span className="text-xs font-bold text-emerald-600">
+                          ₹
+                          {Number(
+                            row?.amount || 0
+                          ).toLocaleString()}
+                        </span>
+
+                      </td>
+
+                      <td className="px-5 py-4 text-right text-xs text-slate-500">
+
+                        {row?.date
+                          ? new Date(
+                              row.date
+                            ).toLocaleDateString(
+                              "en-IN"
+                            )
+                          : "—"}
+
+                      </td>
+
+                    </tr>
+                  );
+                }
+              )
+            ) : (
+              <tr>
+
+                <td
+                  colSpan={5}
+                  className="py-14 text-center"
+                >
+
+                  <p className="text-xs font-semibold text-slate-600">
+                    No converted investors
+                  </p>
+
+                  <p className="mt-1 text-[10px] text-slate-400">
+                    Successful investments will appear here.
+                  </p>
+
+                </td>
+
+              </tr>
+            )}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      {(converted?.length || 0) >
+        perPage && (
+        <div className="flex items-center justify-between border-t border-slate-100 px-5 py-3">
+
+          <p className="text-[10px] text-slate-400">
+            Page {page} of{" "}
+            {totalPages}
+          </p>
+
+          <div className="flex items-center gap-1">
+
+            <button
+              type="button"
+              disabled={page === 1}
+              onClick={() =>
+                setPage(
+                  (prev) =>
+                    Math.max(
+                      1,
+                      prev - 1
+                    )
+                )
+              }
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40"
+            >
+              <HiOutlineChevronLeft />
+            </button>
+
+            <button
+              type="button"
+              disabled={
+                page === totalPages
+              }
+              onClick={() =>
+                setPage(
+                  (prev) =>
+                    Math.min(
+                      totalPages,
+                      prev + 1
+                    )
+                )
+              }
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40"
+            >
+              <HiOutlineChevronRight />
+            </button>
+
+          </div>
+
+        </div>
+      )}
+
+    </div>
+  );
+}
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+function Sidebar({
+  mobileOpen,
+  setMobileOpen,
+  active,
+  setActive,
+  setShowLogoutConfirm,
+}) {
+  return (
+    <aside
+      className={`fixed left-0 top-0 z-50 flex h-screen w-[250px] flex-col border-r border-slate-200 bg-white shadow-xl transition-transform duration-300 lg:sticky lg:top-0 lg:z-30 lg:h-screen lg:translate-x-0 lg:shadow-none ${
+        mobileOpen
+          ? "translate-x-0"
+          : "-translate-x-full"
+      }`}
+    >
+
+      {/* LOGO */}
+
+      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-5">
+
+        <div className="flex items-center gap-3">
+
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 shadow-sm">
+            <HiBriefcase className="text-lg text-white" />
+          </div>
+
+          <div>
+
+            <p className="text-sm font-bold leading-tight text-slate-900">
+              Broker Portal
+            </p>
+
+            <p className="mt-0.5 text-[10px] font-medium text-slate-400">
+              Partner Dashboard
+            </p>
+
+          </div>
+
+        </div>
+
         <button
-          onClick={() => setShowLogoutConfirm(false)}
-          className="px-4 py-2 rounded-lg text-sm bg-gray-100 hover:bg-gray-200"
+          type="button"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 lg:hidden"
+          onClick={() =>
+            setMobileOpen(false)
+          }
         >
-          Cancel
+          <RxCross1 />
         </button>
 
-        {/* Confirm */}
+      </div>
+
+      {/* NAV */}
+
+      <nav className="flex-1 px-3 py-5">
+
+        <p className="mb-3 px-3 text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">
+          Workspace
+        </p>
+
+        {navItems.map(
+          ({
+            icon: Icon,
+            label,
+            type,
+          }) => (
+            <button
+              type="button"
+              key={type}
+              onClick={() => {
+                setActive(type);
+                setMobileOpen(false);
+              }}
+              className={`mb-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-xs font-semibold transition-all ${
+                active === type
+                  ? "bg-slate-900 text-white shadow-sm"
+                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+              }`}
+            >
+              <Icon className="text-lg" />
+
+              <span>{label}</span>
+
+              {active === type && (
+                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              )}
+
+            </button>
+          )
+        )}
+
+      </nav>
+
+      {/* BOTTOM */}
+
+      <div className="border-t border-slate-100 p-3">
+
+        <div className="mb-2 rounded-xl bg-slate-50 p-3">
+
+          <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
+            Partner Account
+          </p>
+
+          <p className="mt-1 text-xs font-semibold text-slate-700">
+            Broker
+          </p>
+
+          <div className="mt-2 flex items-center gap-1.5 text-[9px] font-medium text-emerald-600">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            Account Active
+          </div>
+
+        </div>
+
         <button
-          onClick={handleLogout}
-          className="px-4 py-2 rounded-lg text-sm bg-red-500 text-white hover:bg-red-600"
+          type="button"
+          onClick={() =>
+            setShowLogoutConfirm(true)
+          }
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-xs font-semibold text-slate-500 transition hover:bg-red-50 hover:text-red-600"
         >
+          <HiArrowRightOnRectangle className="text-lg" />
           Sign Out
         </button>
 
       </div>
-    </div>
-  </div>
-  
-)}
-</>
 
-    
+    </aside>
   );
+}
 
-  
+/* =========================================================
+   MAIN DASHBOARD
+========================================================= */
 
-  
+export default function BrokerDashboard() {
+
+  const [mobileOpen, setMobileOpen] =
+    useState(false);
+
+  const [active, setActive] =
+    useState("overview");
+
+  const [dashboard, setDashboard] =
+    useState(null);
+
+  const [profile, setProfile] =
+    useState(null);
+
+  const [investors, setInvestors] =
+    useState([]);
+
+  const [commissions, setCommissions] =
+    useState([]);
+
+  const [earnings, setEarnings] =
+    useState(null);
+
+  const [referrals, setReferrals] =
+    useState([]);
+
+  const [converted, setConverted] =
+    useState([]);
+
+  const [
+    showLogoutConfirm,
+    setShowLogoutConfirm,
+  ] = useState(false);
+
+  /* =======================================================
+     FETCH DATA
+  ======================================================= */
+
+  useEffect(() => {
+
+    const fetchData = async () => {
+
+      try {
+
+        const [
+          dash,
+          prof,
+          inv,
+          comm,
+          earn,
+          ref,
+          conv,
+        ] = await Promise.all([
+          axios.get(
+            "/api/brokers/dashboard"
+          ),
+          axios.get(
+            "/api/brokers/profile"
+          ),
+          axios.get(
+            "/api/brokers/referred-investors"
+          ),
+          axios.get(
+            "/api/brokers/commissions"
+          ),
+          axios.get(
+            "/api/brokers/earnings-summary"
+          ),
+          axios.get(
+            "/api/brokers/total-referrals"
+          ),
+          axios.get(
+            "/api/brokers/total-converted"
+          ),
+        ]);
+
+        setDashboard(
+          dash.data
+        );
+
+        setProfile(
+          prof.data
+        );
+
+        setInvestors(
+          inv.data
+        );
+
+        setCommissions(
+          comm.data
+        );
+
+        setEarnings(
+          earn.data
+        );
+
+        setReferrals(
+          ref.data
+        );
+
+        setConverted(
+          conv.data
+        );
+
+      } catch (error) {
+
+        console.error(
+          "BROKER DASHBOARD ERROR:",
+          error
+        );
+
+      }
+
+    };
+
+    fetchData();
+
+  }, []);
+
+  /* =======================================================
+     LOGOUT
+  ======================================================= */
+
+  const handleLogout = () => {
+
+    localStorage.removeItem(
+      "token"
+    );
+
+    localStorage.removeItem(
+      "user"
+    );
+
+    window.location.href = "/";
+
+  };
+
+  /* =======================================================
+     OVERVIEW
+  ======================================================= */
+
+  return (
+    <>
+      <div className="min-h-screen bg-slate-50 font-sans">
+
+        <div className="flex min-h-screen">
+
+          {/* SIDEBAR */}
+
+          <Sidebar
+            mobileOpen={mobileOpen}
+            setMobileOpen={setMobileOpen}
+            active={active}
+            setActive={setActive}
+            setShowLogoutConfirm={
+              setShowLogoutConfirm
+            }
+          />
+
+          {/* MOBILE OVERLAY */}
+
+          {mobileOpen && (
+            <div
+              className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm lg:hidden"
+              onClick={() =>
+                setMobileOpen(false)
+              }
+            />
+          )}
+
+          {/* =================================================
+              CONTENT
+          ================================================= */}
+
+          <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
+
+            {/* OVERVIEW */}
+
+            {active === "overview" && (
+              <>
+                <Header
+                  setMobileOpen={
+                    setMobileOpen
+                  }
+                  profile={profile}
+                />
+
+                <StatCards
+                  data={dashboard}
+                />
+
+                {/* CODE + PERFORMANCE */}
+
+                <div className="mb-6 grid grid-cols-1 gap-5 xl:grid-cols-[1.7fr_1fr]">
+
+                  <BrokerCodeCard
+                    profile={profile}
+                  />
+
+                  <PerformanceCard
+                    dashboard={
+                      dashboard
+                    }
+                  />
+
+                </div>
+
+                {/* RECENT INVESTORS */}
+
+                <div className="mb-6">
+
+                  <RecentInvestors
+                    investors={
+                      investors
+                    }
+                  />
+
+                </div>
+
+                {/* COMMISSION + EARNINGS */}
+
+                <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.7fr_1fr]">
+
+                  <CommissionDetails
+                    commissions={
+                      commissions
+                    }
+                  />
+
+                  <EarningsSummary
+                    data={earnings}
+                  />
+
+                </div>
+              </>
+            )}
+
+            {/* =================================================
+                REFERRALS
+            ================================================= */}
+
+            {active === "referral" && (
+              <>
+
+                <Header
+                  setMobileOpen={
+                    setMobileOpen
+                  }
+                  profile={profile}
+                />
+
+                <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+
+                  <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-5">
+
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-blue-600">
+                      Total Referrals
+                    </p>
+
+                    <p className="mt-2 text-2xl font-bold text-slate-900">
+                      {referrals?.length ||
+                        0}
+                    </p>
+
+                    <p className="mt-1 text-[10px] text-slate-500">
+                      Users joined through your code
+                    </p>
+
+                  </div>
+
+                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-5">
+
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">
+                      Converted
+                    </p>
+
+                    <p className="mt-2 text-2xl font-bold text-slate-900">
+                      {dashboard?.conversions ||
+                        0}
+                    </p>
+
+                    <p className="mt-1 text-[10px] text-slate-500">
+                      Successful investments
+                    </p>
+
+                  </div>
+
+                  <div className="rounded-2xl border border-violet-100 bg-violet-50/60 p-5">
+
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-violet-600">
+                      Conversion Rate
+                    </p>
+
+                    <p className="mt-2 text-2xl font-bold text-slate-900">
+
+                      {referrals?.length
+                        ? (
+                            ((dashboard?.conversions ||
+                              0) /
+                              referrals.length) *
+                            100
+                          ).toFixed(1)
+                        : "0.0"}
+                      %
+
+                    </p>
+
+                    <p className="mt-1 text-[10px] text-slate-500">
+                      Referral to investment
+                    </p>
+
+                  </div>
+
+                </div>
+
+                <ReferralList
+                  referrals={referrals}
+                />
+
+              </>
+            )}
+
+            {/* =================================================
+                CONVERTED
+            ================================================= */}
+
+            {active === "converted" && (
+              <>
+
+                <Header
+                  setMobileOpen={
+                    setMobileOpen
+                  }
+                  profile={profile}
+                />
+
+                <ConvertedList
+                  converted={converted}
+                />
+
+              </>
+            )}
+
+            {/* =================================================
+                COMMISSION
+            ================================================= */}
+
+            {active === "commission" && (
+              <>
+
+                <Header
+                  setMobileOpen={
+                    setMobileOpen
+                  }
+                  profile={profile}
+                />
+
+                <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+
+                  <div className="rounded-2xl border border-violet-100 bg-violet-50/60 p-5">
+
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-violet-600">
+                      Total Earnings
+                    </p>
+
+                    <p className="mt-2 text-2xl font-bold text-slate-900">
+                      ₹
+                      {Number(
+                        dashboard?.totalEarnings ||
+                          0
+                      ).toLocaleString()}
+                    </p>
+
+                    <p className="mt-1 text-[10px] text-slate-500">
+                      Total commission
+                    </p>
+
+                  </div>
+
+                  <div className="rounded-2xl border border-amber-100 bg-amber-50/60 p-5">
+
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600">
+                      Commission Records
+                    </p>
+
+                    <p className="mt-2 text-2xl font-bold text-slate-900">
+                      {commissions?.length ||
+                        0}
+                    </p>
+
+                    <p className="mt-1 text-[10px] text-slate-500">
+                      Recorded commission entries
+                    </p>
+
+                  </div>
+
+                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-5">
+
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">
+                      Current Payout
+                    </p>
+
+                    <p className="mt-2 text-lg font-bold text-slate-900">
+                      {earnings?.nextPayout ||
+                        "To be announced"}
+                    </p>
+
+                    <p className="mt-1 text-[10px] text-slate-500">
+                      Next payout information
+                    </p>
+
+                  </div>
+
+                </div>
+
+                <CommissionDetails
+                  commissions={
+                    commissions
+                  }
+
+                />
+
+              </>
+            )}
+
+          </main>
+
+        </div>
+
+      </div>
+
+      {/* =====================================================
+          LOGOUT MODAL
+      ===================================================== */}
+
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
+
+          <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50">
+              <HiArrowRightOnRectangle className="text-xl text-red-600" />
+            </div>
+
+            <h3 className="mt-4 text-lg font-bold text-slate-900">
+              Sign Out
+            </h3>
+
+            <p className="mt-1 text-sm leading-relaxed text-slate-500">
+              Are you sure you want to sign out of your broker account?
+            </p>
+
+            <div className="mt-6 flex justify-end gap-2">
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShowLogoutConfirm(
+                    false
+                  )
+                }
+                className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={
+                  handleLogout
+                }
+                className="rounded-xl bg-red-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-red-700"
+              >
+                Sign Out
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+      )}
+    </>
+  );
 }

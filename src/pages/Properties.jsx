@@ -13,7 +13,7 @@ import { HiOutlineLocationMarker } from "react-icons/hi";
 import { NavLink } from "react-router-dom";
 import axios from "../utils/axios";
 
-const FUNDING_STATUS = ["All", "Fully Funded", "In Progress"];
+const FUNDING_STATUS = ["All", "In Progress"];
 
 function Breadcrumb() {
   return (
@@ -172,17 +172,85 @@ function FilterPanel({
   );
 }
 
+const getImageUrl = (image) => {
+  if (!image) return null;
+
+  // Agar string hai
+  if (typeof image === "string") {
+    const trimmedImage = image.trim();
+
+    // Empty values handle karo
+    if (
+      !trimmedImage ||
+      trimmedImage === "[]" ||
+      trimmedImage === "null" ||
+      trimmedImage === "undefined"
+    ) {
+      return null;
+    }
+
+    // Agar Cloudinary / full URL hai
+    if (
+      trimmedImage.startsWith("http://") ||
+      trimmedImage.startsWith("https://") ||
+      trimmedImage.startsWith("data:image")
+    ) {
+      return trimmedImage;
+    }
+
+    const API_BASE_URL =
+      import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+    return `${API_BASE_URL.replace(/\/$/, "")}/${trimmedImage.replace(
+      /^\//,
+      ""
+    )}`;
+  }
+
+  // Agar array hai
+  if (Array.isArray(image)) {
+    if (image.length === 0) return null;
+
+    return getImageUrl(image[0]);
+  }
+
+  // Agar object hai
+  if (typeof image === "object" && image !== null) {
+    const imageValue =
+      image.secure_url ||
+      image.url ||
+      image.imageUrl ||
+      image.path ||
+      image.location ||
+      image.src ||
+      null;
+
+    return getImageUrl(imageValue);
+  }
+
+  return null;
+};
+
 function PropertyCard({ p }) {
   return (
     <div className="group bg-white/90 backdrop-blur-md rounded-2xl border border-gray-200/80 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
       <div>
         {/* IMAGE */}
         <div className="relative overflow-hidden aspect-[16/10]">
-          <img
-            src={p.img || "https://via.placeholder.com/400x250?text=Property+Image"}
-            alt={p.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-          />
+        <img
+  key={getImageUrl(p.img)}
+  src={
+    getImageUrl(p.img) ||
+    "https://via.placeholder.com/400x250?text=Property+Image"
+  }
+  alt={p.name || "Property"}
+  className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+  onError={(e) => {
+    e.currentTarget.onerror = null;
+    e.currentTarget.src =
+      "https://via.placeholder.com/400x250?text=Property+Image";
+  }}
+/>
 
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
 
@@ -213,10 +281,13 @@ function PropertyCard({ p }) {
           {/* METRICS */}
           <div className="grid grid-cols-2 gap-3 my-4 p-2.5 bg-gray-50/80 rounded-xl border border-gray-100 text-xs">
             <div>
-              <p className="text-gray-400 text-[10px] font-semibold uppercase tracking-wider">
-                Locking
-              </p>
-              <p className="font-bold text-gray-800 mt-0.5">{p.locking_period}</p>
+            <p className="text-gray-400 text-[10px] font-semibold uppercase tracking-wider">
+  Lock-in Period
+</p>
+
+<p className="font-bold text-gray-800 mt-0.5">
+  {p.lockInYears} {p.lockInYears === 1 ? "Year" : "Years"}
+</p>
             </div>
 
             <div>
@@ -431,19 +502,30 @@ export default function PropertyPage() {
   const fetchProperties = async () => {
     try {
       setLoading(true);
+      
 
       const res = await axios.get("/api/properties/explore", {
         params: {
           ...(search && { search }),
+      
           ...(locations.length > 0 && {
             city: locations.join(","),
           }),
-          ...(roiRange !== null && { minROI: roiRange }),
-          ...(budgetRange !== null && { maxPrice: budgetRange }),
-          ...(fundingStatus !== "All" && {
-            status: fundingStatus === "In Progress" ? "funding" : "funded",
+      
+          ...(roiRange !== null && {
+            minROI: roiRange,
           }),
+      
+          ...(budgetRange !== null && {
+            maxPrice: budgetRange,
+          }),
+      
+          ...(fundingStatus === "In Progress" && {
+            status: "funding",
+          }),
+      
           ...(type && { type }),
+      
           sort:
             sortBy === "Highest ROI"
               ? "roi"
@@ -452,10 +534,14 @@ export default function PropertyPage() {
               : sortBy === "Most Funded"
               ? "funded"
               : "newest",
+      
           page: currentPage,
           limit: 6,
         },
       });
+
+      console.log("EXPLORE API RESPONSE:", res.data);
+    console.log("PROPERTIES:", res.data.data);
 
       setProperties(res.data.data || []);
       setTotalPages(res.data.pagination?.pages || 1);
@@ -465,6 +551,12 @@ export default function PropertyPage() {
       setLoading(false);
     }
   };
+
+  const visibleProperties = properties.filter(
+    (p) =>
+      p.status !== "funded" &&
+      Number(p.fundedPercent || 0) < 100
+  );
 
   useEffect(() => {
     fetchProperties();
@@ -513,23 +605,25 @@ export default function PropertyPage() {
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* SIDEBAR FILTER */}
-          <div className="w-full lg:w-64 shrink-0">
-            <FilterPanel
-              locations={locations}
-              setLocations={setLocations}
-              allLocations={allLocations}
-              type={type}
-              setType={setType}
-              budgetRange={budgetRange}
-              setBudgetRange={setBudgetRange}
-              roiRange={roiRange}
-              setRoiRange={setRoiRange}
-              fundingStatus={fundingStatus}
-              setFundingStatus={setFundingStatus}
-              onApply={fetchProperties}
-              onReset={handleReset}
-            />
-          </div>
+          <div className="w-full lg:w-64 shrink-0 lg:sticky lg:top-6 lg:self-start">
+  <div className="max-h-[calc(100vh-3rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-emerald-200 scrollbar-track-transparent pr-1">
+    <FilterPanel
+      locations={locations}
+      setLocations={setLocations}
+      allLocations={allLocations}
+      type={type}
+      setType={setType}
+      budgetRange={budgetRange}
+      setBudgetRange={setBudgetRange}
+      roiRange={roiRange}
+      setRoiRange={setRoiRange}
+      fundingStatus={fundingStatus}
+      setFundingStatus={setFundingStatus}
+      onApply={fetchProperties}
+      onReset={handleReset}
+    />
+  </div>
+</div>
 
           {/* MAIN LISTINGS */}
           <div className="flex-1 min-w-0">
@@ -537,8 +631,8 @@ export default function PropertyPage() {
               <p className="text-sm font-medium text-gray-600">
                 Showing{" "}
                 <span className="font-bold text-gray-900">
-                  {properties.length} properties
-                </span>
+  {visibleProperties.length} properties
+</span>
               </p>
 
               <div className="flex items-center gap-2">
@@ -584,28 +678,64 @@ export default function PropertyPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {properties.map((p) => (
-                  <PropertyCard
-                    key={p.id}
-                    p={{
-                      id: p.id,
-                      name: p.name,
-                      loc: p.location
-                        ? `${capitalize(p.location.city)}, ${capitalize(
-                            p.location.state
-                          )}`
-                        : "Location N/A",
-                      img: p.image,
-                      totalValue: `₹${p.totalValue?.toLocaleString() || "0"}`,
-                      sharePrice: `₹${p.sharePrice?.toLocaleString() || "0"}`,
-                      funded: p.fundedPercent || 0,
-                      locking_period: p.locking_period || "1 Year",
-                      roi: p.roi,
-                      type: p.type,
-                    }}
-                  />
-                ))}
-              </div>
+ {visibleProperties.map((p) => (
+  <PropertyCard
+    key={p.id}
+    p={{
+      id: p.id,
+      name: p.name,
+
+      loc: p.location
+        ? `${capitalize(p.location.city)}, ${capitalize(
+            p.location.state
+          )}`
+        : "Location N/A",
+
+        img: getImageUrl(
+          p.coverImage ||
+          p.image ||
+          p.imageUrl ||
+          p.thumbnail ||
+          p.images?.[0]?.secure_url ||
+          p.images?.[0]?.url ||
+          p.images?.[0]?.imageUrl ||
+          p.images?.[0]?.path ||
+          p.images?.[0] ||
+          p.photos?.[0]?.secure_url ||
+          p.photos?.[0]?.url ||
+          p.photos?.[0]?.path ||
+          p.photos?.[0] ||
+          null
+        ),
+
+      totalValue: `₹${p.totalValue?.toLocaleString() || "0"}`,
+
+      sharePrice: `₹${p.sharePrice?.toLocaleString() || "0"}`,
+
+      funded: p.fundedPercent || 0,
+
+      lockInYears: p.lockInYears ?? 2,
+
+      shareBuyingCycle: p.shareBuyingCycle ?? 10,
+
+      stakeholderUnit: p.stakeholderUnit ?? 10,
+
+      companyReservedShares:
+        p.companyReservedShares ?? 10,
+
+      publicAvailableShares:
+        p.publicAvailableShares ?? 0,
+
+      enableFullOwnership:
+        p.enableFullOwnership ?? false,
+
+      roi: p.roi,
+
+      type: p.type,
+    }}
+  />
+))}
+</div>
             )}
 
             {/* ENHANCED PAGINATION */}

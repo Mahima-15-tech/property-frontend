@@ -34,6 +34,8 @@ import WatchList from "./components/WatchList";
 import BrokerSignup from "./pages/Brokersignup";
 import BrokerLogin from "./pages/BrokerLogin";
 import VerificationPending from "./pages/VerificationPending";
+import BlogPage from "./pages/BlogPage";
+import BlogDetails from "./pages/BlogDetail";
 
 function App() {
   useEffect(() => {
@@ -68,6 +70,9 @@ function App() {
           <Route path="kyc" element={<KYCVerification />} />
     
           <Route path="kyc-submission" element={<KycSubmission />} />
+
+          <Route path="blogs" element={<BlogPage />} />
+<Route path="blog/:slug" element={<BlogDetails />} />
          
           <Route
             path="login"

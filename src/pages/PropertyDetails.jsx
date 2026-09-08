@@ -12,7 +12,7 @@ import { addToWatchlist } from "../slices/watchlistSlice";
 import axios from "../utils/axios";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-
+import { FiCheckCircle } from "react-icons/fi";
 
 
 
@@ -46,33 +46,51 @@ const RELATED = [
 
 
 function Gallery({ property }) {
+  const propertyImages =
+    property?.media?.images?.filter(Boolean)?.length > 0
+      ? property.media.images.filter(Boolean)
+      : property?.images?.filter(Boolean)?.length > 0
+      ? property.images.filter(Boolean)
+      : [];
+
   const images =
-    property?.images?.length > 0
-      ? property.images
-      : GALLERY;
+    propertyImages.length > 0
+      ? propertyImages
+      : [FALLBACK_IMAGE];
 
   const [activeIndex, setActiveIndex] = useState(0);
 
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [property?._id, property?.id]);
+
+  const handleImageError = (e) => {
+    if (e.currentTarget.src !== FALLBACK_IMAGE) {
+      e.currentTarget.src = FALLBACK_IMAGE;
+    }
+  };
+
   return (
     <div className="mb-8">
+
       {/* MAIN IMAGE */}
       <div className="relative rounded-3xl overflow-hidden mb-3 group shadow-lg">
         <img
-          src={images[activeIndex]}
-          alt="main"
+          src={images[activeIndex] || FALLBACK_IMAGE}
+          alt={property?.name || "Property"}
           className="w-full h-56 sm:h-72 lg:h-80 object-cover transition-transform duration-500 group-hover:scale-105"
+          onError={handleImageError}
         />
 
-        {/* GRADIENT */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
 
-        {/* BADGES */}
         <div className="absolute top-4 left-4 flex gap-2">
           <span className="bg-black/70 backdrop-blur text-white text-[10px] font-semibold px-3 py-1 rounded-full border border-white/20">
-            {property?.type || "COMMERCIAL"}
+            {property?.type || "PROPERTY"}
           </span>
+
           <span className="bg-emerald-600 text-white text-[10px] font-semibold px-3 py-1 rounded-full shadow">
-            {property?.fundedPercent || 88}% FUNDED
+            {property?.fundedPercent ?? 0}% FUNDED
           </span>
         </div>
       </div>
@@ -81,94 +99,838 @@ function Gallery({ property }) {
       <div className="grid grid-cols-4 gap-3 mt-8">
         {images.map((img, i) => (
           <div
-            key={i}
+            key={`${img}-${i}`}
             onClick={() => setActiveIndex(i)}
-            className={`relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 
-              
-              ${activeIndex === i
-                ? "ring-2 ring-emerald-500 shadow-lg scale-105"
-                : "border border-gray-200 hover:border-emerald-400 hover:shadow-md"
+            className={`relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-300
+              ${
+                activeIndex === i
+                  ? "ring-2 ring-emerald-500 shadow-lg scale-105"
+                  : "border border-gray-200 hover:border-emerald-400 hover:shadow-md"
               }
             `}
           >
             <img
-              src={img}
+              src={img || FALLBACK_IMAGE}
               alt={`gallery-${i}`}
-              className="w-full h-16 sm:h-20 object-contain"
+              className="w-full h-16 sm:h-20 object-cover"
+              onError={handleImageError}
             />
-
-            {/* LAST IMAGE OVERLAY */}
-            {i === images.length - 1 && images.length > 5 && (
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                <span className="text-white text-xs font-bold">
-                  +{images.length - 1} Photos
-                </span>
-              </div>
-            )}
           </div>
         ))}
       </div>
+
     </div>
   );
 }
 
-function ReturnsCalculator() {
-  const [shares, setShares] = useState(2);
-  const sharePrice = 25000;
-  const monthlyRent = 0.081 / 12;
-  const holdingYears = 5;
-  const appreciation = 0.074;
+
+function ReturnsCalculator({ property }) {
+  const totalShares = Number(property?.totalShares || 0);
+
+  const availableShares = Number(
+    property?.sharesLeft ?? property?.availableShares ?? 0
+  );
+
+  const sharePrice = Number(property?.sharePrice || 0);
+
+  const shareCycle = Number(
+    property?.shareBuyingCycle || 10
+  );
+
+  const stakeholderUnit = Number(
+    property?.stakeholderUnit || 10
+  );
+
+  const lockInYears = Number(
+    property?.lockInYears || 2
+  );
+
+  const rentalYield = Number(
+    property?.rentalYield || 0
+  );
+
+  const appreciation = Number(
+    property?.appreciation || 0
+  );
+
+  // ==========================================
+  // MAX VALID PURCHASE SHARES
+  // ==========================================
+
+  const calculateMaxShares = () => {
+    if (availableShares < 10) {
+      return 0;
+    }
+
+    if (shareCycle === 10) {
+      return Math.floor(availableShares / 10) * 10;
+    }
+
+    // Cycle 5
+    // 10, 15, 20, 25...
+
+    return (
+      10 +
+      Math.floor((availableShares - 10) / 5) * 5
+    );
+  };
+
+  const maxShares = Math.min(
+    totalShares,
+    calculateMaxShares()
+  );
+
+  // ==========================================
+  // INITIAL SHARES
+  // ==========================================
+
+  const [shares, setShares] = useState(
+    maxShares >= 10 ? 10 : 0
+  );
+
+  // ==========================================
+  // AVAILABLE SHARES CHANGE HONE PAR
+  // ==========================================
+
+  useEffect(() => {
+    if (maxShares < 10) {
+      setShares(0);
+      return;
+    }
+  
+    setShares((currentShares) => {
+      if (currentShares < 10) return 10;
+  
+      if (currentShares > maxShares) {
+        return maxShares;
+      }
+  
+      return currentShares;
+    });
+  }, [maxShares]);
+
+  // ==========================================
+  // CALCULATIONS
+  // ==========================================
 
   const totalInvest = shares * sharePrice;
-  const monthlyIncome = totalInvest * monthlyRent;
-  const exitValue = totalInvest * Math.pow(1 + appreciation, holdingYears);
+
+  const monthlyIncome =
+    totalInvest * (rentalYield / 100) / 12;
+
+  const exitValue =
+    totalInvest *
+    Math.pow(
+      1 + appreciation / 100,
+      lockInYears
+    );
+
+  const ownershipPercent =
+    totalShares > 0
+      ? (shares / totalShares) * 100
+      : 0;
+
+  // ==========================================
+  // NO PURCHASABLE SHARES
+  // ==========================================
+
+  if (maxShares < 10) {
+    return (
+      <div className="bg-gray-50 rounded-2xl border border-gray-200 p-4 mb-4">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-sm font-semibold text-gray-900">
+            Returns Calculator
+          </span>
+
+          <span className="text-xs text-red-600 font-semibold bg-red-50 px-2 py-1 rounded-full">
+            Not Available
+          </span>
+        </div>
+
+        <p className="text-sm text-gray-500">
+          There are not enough shares available for the minimum
+          purchase of 10 shares.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50 rounded-2xl border border-gray-200 p-4 mb-4">
+
+      {/* HEADER */}
       <div className="flex items-center justify-between mb-4">
-        <span className="text-sm font-semibold text-gray-900">Returns Calculator</span>
-        <span className="text-xs text-emerald-700 font-semibold bg-emerald-50 px-2 py-1 rounded-full">Live Projection</span>
+
+        <span className="text-sm font-semibold text-gray-900">
+          Returns Calculator
+        </span>
+
+        <span className="text-xs text-emerald-700 font-semibold bg-emerald-50 px-2 py-1 rounded-full">
+          Live Projection
+        </span>
+
       </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+        {/* SHARE SELECTOR */}
         <div>
-          <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Select Shares</p>
+
+          <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">
+            Select Shares
+          </p>
+
           <div className="flex items-center gap-3 mb-3">
-            <button onClick={() => setShares(Math.max(1, shares - 1))} className="w-8 h-8 border border-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-100">
+
+            {/* MINUS */}
+            <button
+              onClick={() => {
+                const nextShares =
+                  shares - shareCycle;
+
+                if (nextShares >= 10) {
+                  setShares(nextShares);
+                }
+              }}
+              disabled={shares <= 10}
+              className="w-8 h-8 border border-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-100 disabled:opacity-40"
+            >
               <FiMinus size={14} />
             </button>
-            <span className="text-2xl font-bold text-gray-900 w-8 text-center">{String(shares).padStart(2, "0")}</span>
-            <button onClick={() => setShares(Math.min(100, shares + 1))} className="w-8 h-8 bg-emerald-700 text-white rounded-lg flex items-center justify-center hover:bg-emerald-800">
+
+            {/* CURRENT SHARES */}
+            <span className="text-2xl font-bold text-gray-900 w-10 text-center">
+              {String(shares).padStart(2, "0")}
+            </span>
+
+            {/* PLUS */}
+            <button
+              onClick={() => {
+                const nextShares =
+                  shares + shareCycle;
+
+                if (nextShares <= maxShares) {
+                  setShares(nextShares);
+                }
+              }}
+              disabled={shares >= maxShares}
+              className="w-8 h-8 bg-emerald-700 text-white rounded-lg flex items-center justify-center hover:bg-emerald-800 disabled:opacity-40"
+            >
               <FiPlus size={14} />
             </button>
+
           </div>
+
+          {/* AVAILABLE */}
+          <p className="text-[10px] text-gray-400 mb-3">
+            {availableShares} shares currently available
+          </p>
+
+          {/* OWNERSHIP */}
           <div>
-            <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Ownership Percentage</p>
-            <p className="text-sm font-bold text-gray-900">{shares}.0%</p>
+
+            <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">
+              Ownership Percentage
+            </p>
+
+            <p className="text-sm font-bold text-gray-900">
+              {ownershipPercent.toFixed(2)}%
+            </p>
+
             <div className="w-full bg-gray-200 rounded-full h-1 mt-1.5">
-              <div className="bg-emerald-700 h-1 rounded-full" style={{ width: `${shares}%` }}></div>
+
+              <div
+                className="bg-emerald-700 h-1 rounded-full"
+                style={{
+                  width: `${Math.min(
+                    ownershipPercent,
+                    100
+                  )}%`,
+                }}
+              />
+
             </div>
+
           </div>
+
         </div>
+
+        {/* CALCULATIONS */}
         <div className="space-y-3">
+
           <div className="bg-white rounded-xl p-3 border border-gray-100">
-            <p className="text-[10px] text-gray-400">Total Investment</p>
-            <p className="text-sm font-bold text-gray-900">${totalInvest.toLocaleString()}</p>
+
+            <p className="text-[10px] text-gray-400">
+              Total Investment
+            </p>
+
+            <p className="text-sm font-bold text-gray-900">
+              ₹{totalInvest.toLocaleString("en-IN")}
+            </p>
+
           </div>
+
           <div className="bg-white rounded-xl p-3 border border-gray-100">
-            <p className="text-[10px] text-gray-400">Est. Monthly Income</p>
-            <p className="text-sm font-bold text-emerald-700">${monthlyIncome.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
+
+            <p className="text-[10px] text-gray-400">
+              Est. Monthly Income
+            </p>
+
+            <p className="text-sm font-bold text-emerald-700">
+              ₹{monthlyIncome.toLocaleString("en-IN", {
+                maximumFractionDigits: 2,
+              })}
+            </p>
+
           </div>
+
           <div className="bg-white rounded-xl p-3 border border-gray-100">
-            <p className="text-[10px] text-gray-400">Projected Exit (5Y)</p>
-            <p className="text-sm font-bold text-gray-900">${Math.round(exitValue).toLocaleString()}</p>
+
+            <p className="text-[10px] text-gray-400">
+              Projected Exit ({lockInYears}Y)
+            </p>
+
+            <p className="text-sm font-bold text-gray-900">
+              ₹{Math.round(exitValue).toLocaleString("en-IN")}
+            </p>
+
           </div>
+
         </div>
+
       </div>
+
     </div>
   );
 }
 
-function StickyCard({ property, liked, setLiked }){
+// function FullOwnershipCard({
+//   property,
+//   investment,
+//   onRequest,
+//   loading,
+//   ownershipRequest,
+//   setOwnershipRequest,
+// }) {
+//   const [paymentReference, setPaymentReference] = useState("");
+//   const [paymentFile, setPaymentFile] = useState(null);
+//   const [paymentLoading, setPaymentLoading] = useState(false);
+
+//   if (!property || !investment) {
+//     return null;
+//   }
+
+//   const totalShares = Number(property.totalShares || 0);
+
+//   const currentShares = Number(investment.shares || 0);
+
+//   const remainingShares = Math.max(
+//     totalShares - currentShares,
+//     0
+//   );
+
+//   const currentOwnership =
+//     totalShares > 0
+//       ? (currentShares / totalShares) * 100
+//       : 0;
+
+//   const isAlreadyFullOwner =
+//     currentShares >= totalShares ||
+//     investment.isFullOwner === true;
+
+//   if (!property.enableFullOwnership) {
+//     return null;
+//   }
+
+//   // ==========================================
+//   // ALREADY FULL OWNER
+//   // ==========================================
+
+//   if (isAlreadyFullOwner) {
+//     return (
+//       <div className="mt-4 bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
+//         <div className="flex items-center gap-2">
+//           <FiCheckCircle
+//             size={18}
+//             className="text-emerald-700"
+//           />
+
+//           <p className="text-sm font-bold text-emerald-800">
+//             You own 100% of this property
+//           </p>
+//         </div>
+
+//         <p className="text-xs text-emerald-700 mt-1">
+//           You are the full owner of this property.
+//         </p>
+//       </div>
+//     );
+//   }
+
+//   if (remainingShares <= 0) {
+//     return null;
+//   }
+
+//   // ==========================================
+//   // PAYMENT SUBMIT
+//   // ==========================================
+
+//   const handlePaymentSubmit = async () => {
+//     if (!ownershipRequest?._id) {
+//       toast.error("Ownership request not found");
+//       return;
+//     }
+
+//     if (!paymentReference.trim()) {
+//       toast.error("Please enter payment reference / UTR");
+//       return;
+//     }
+
+//     if (!paymentFile) {
+//       toast.error("Please upload payment screenshot");
+//       return;
+//     }
+
+//     try {
+//       setPaymentLoading(true);
+
+//       const formData = new FormData();
+
+//       formData.append(
+//         "paymentReference",
+//         paymentReference.trim()
+//       );
+
+//       formData.append(
+//         "paymentMethod",
+//         "Bank Transfer"
+//       );
+
+//       // IMPORTANT:
+//       // This field name must match uploadSingle middleware.
+//       formData.append("file", paymentFile);
+
+//       const res = await axios.post(
+//         `/api/ownership/${ownershipRequest._id}/payment-proof`,
+//         formData
+//       );
+
+//       toast.success(
+//         res.data?.message ||
+//           "Payment proof submitted successfully"
+//       );
+
+//       setOwnershipRequest(
+//         res.data?.request || {
+//           ...ownershipRequest,
+//           status: "payment_submitted",
+//           paymentStatus: "payment_submitted",
+//           paymentReference: paymentReference.trim(),
+//         }
+//       );
+
+//       setPaymentReference("");
+//       setPaymentFile(null);
+
+//     } catch (err) {
+//       console.error(
+//         "PAYMENT PROOF ERROR:",
+//         err.response?.data || err
+//       );
+
+//       toast.error(
+//         err.response?.data?.message ||
+//           "Failed to submit payment proof"
+//       );
+//     } finally {
+//       setPaymentLoading(false);
+//     }
+//   };
+
+//   // ==========================================
+//   // REQUEST CREATED
+//   // ==========================================
+
+//   const requestPaymentStatus =
+//     ownershipRequest?.paymentStatus;
+
+//   const requestStatus =
+//     ownershipRequest?.status;
+
+//   const paymentSubmitted =
+//     requestStatus === "payment_submitted" ||
+//     requestPaymentStatus === "payment_submitted";
+
+//   const paymentVerified =
+//     requestStatus === "payment_verified" ||
+//     requestPaymentStatus === "verified";
+
+//   const paymentRejected =
+//     requestPaymentStatus === "rejected";
+
+//   return (
+//     <div className="mt-4 rounded-2xl border border-teal-100 bg-teal-50/70 p-4">
+
+//       {/* ========================================== */}
+//       {/* HEADER */}
+//       {/* ========================================== */}
+
+//       <div className="flex items-center justify-between mb-3">
+
+//         <div>
+//           <p className="text-[10px] font-extrabold uppercase tracking-wider text-teal-700">
+//             Full Ownership
+//           </p>
+
+//           <p className="text-sm font-extrabold text-gray-900 mt-1">
+//             Become 100% Owner
+//           </p>
+//         </div>
+
+//         <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-teal-700 shadow-sm">
+//           <BsBuilding size={18} />
+//         </div>
+
+//       </div>
+
+//       {/* ========================================== */}
+//       {/* CURRENT OWNERSHIP */}
+//       {/* ========================================== */}
+
+//       <div className="bg-white rounded-xl border border-teal-100 p-3 mb-3">
+
+//         <div className="flex justify-between items-center mb-2">
+
+//           <span className="text-xs text-gray-500">
+//             Current Ownership
+//           </span>
+
+//           <span className="text-sm font-extrabold text-teal-800">
+//             {currentOwnership.toFixed(2)}%
+//           </span>
+
+//         </div>
+
+//         <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+//           <div
+//             className="h-full bg-teal-700 rounded-full transition-all"
+//             style={{
+//               width: `${Math.min(
+//                 currentOwnership,
+//                 100
+//               )}%`,
+//             }}
+//           />
+//         </div>
+
+//         <div className="flex justify-between mt-3 text-xs">
+
+//           <span className="text-gray-500">
+//             Shares owned
+//           </span>
+
+//           <span className="font-bold text-gray-900">
+//             {currentShares} / {totalShares}
+//           </span>
+
+//         </div>
+
+//         <div className="flex justify-between mt-1 text-xs">
+
+//           <span className="text-gray-500">
+//             Remaining shares
+//           </span>
+
+//           <span className="font-bold text-teal-800">
+//             {remainingShares}
+//           </span>
+
+//         </div>
+
+//       </div>
+
+//       {/* ========================================== */}
+//       {/* NO REQUEST */}
+//       {/* ========================================== */}
+
+//       {!ownershipRequest && (
+//         <>
+//           <button
+//             onClick={onRequest}
+//             disabled={loading}
+//             className="w-full bg-teal-800 hover:bg-teal-900 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl text-xs transition-all"
+//           >
+//             {loading
+//               ? "Creating Request..."
+//               : "Request 100% Ownership"}
+//           </button>
+
+//           <p className="text-[10px] text-gray-500 text-center mt-2">
+//             Remaining {remainingShares} shares will be
+//             transferred after payment verification.
+//           </p>
+//         </>
+//       )}
+
+//       {/* ========================================== */}
+//       {/* PAYMENT PENDING */}
+//       {/* ========================================== */}
+
+//       {ownershipRequest &&
+//         !paymentSubmitted &&
+//         !paymentVerified &&
+//         !paymentRejected && (
+//           <div className="bg-white border border-amber-200 rounded-xl p-4">
+
+//             <div className="flex items-center justify-between mb-3">
+
+//               <div>
+//                 <p className="text-xs font-bold text-gray-900">
+//                   Full Ownership Payment
+//                 </p>
+
+//                 <p className="text-[11px] text-gray-500 mt-1">
+//                   Complete the bank transfer and submit
+//                   your payment proof.
+//                 </p>
+//               </div>
+
+//               <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 text-[9px] font-bold uppercase">
+//                 Payment Pending
+//               </span>
+
+//             </div>
+
+//             {/* PAYMENT SUMMARY */}
+
+//             <div className="grid grid-cols-2 gap-3 mb-4">
+
+//               <div className="bg-gray-50 rounded-lg p-3">
+//                 <p className="text-[9px] text-gray-400 uppercase">
+//                   Additional Shares
+//                 </p>
+
+//                 <p className="text-sm font-bold text-gray-900 mt-1">
+//                   {ownershipRequest.requestedShares}
+//                 </p>
+//               </div>
+
+//               <div className="bg-gray-50 rounded-lg p-3">
+//                 <p className="text-[9px] text-gray-400 uppercase">
+//                   Price / Share
+//                 </p>
+
+//                 <p className="text-sm font-bold text-gray-900 mt-1">
+//                   ₹
+//                   {Number(
+//                     ownershipRequest.pricePerShare || 0
+//                   ).toLocaleString("en-IN")}
+//                 </p>
+//               </div>
+
+//               <div className="col-span-2 bg-emerald-50 rounded-lg p-3">
+
+//                 <p className="text-[9px] text-emerald-600 uppercase">
+//                   Total Amount
+//                 </p>
+
+//                 <p className="text-xl font-extrabold text-emerald-800 mt-1">
+//                   ₹
+//                   {Number(
+//                     ownershipRequest.amount || 0
+//                   ).toLocaleString("en-IN")}
+//                 </p>
+
+//               </div>
+
+//             </div>
+
+//             {/* PAYMENT METHOD */}
+
+//             <div className="mb-4">
+
+//               <p className="text-[10px] text-gray-400 uppercase mb-1">
+//                 Payment Method
+//               </p>
+
+//               <div className="text-xs font-semibold text-gray-700 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+//                 Bank Transfer
+//               </div>
+
+//             </div>
+
+//             {/* UTR */}
+
+//             <div className="mb-3">
+
+//               <label className="text-[10px] font-bold text-gray-600 uppercase">
+//                 Payment Reference / UTR
+//               </label>
+
+//               <input
+//                 type="text"
+//                 value={paymentReference}
+//                 onChange={(e) =>
+//                   setPaymentReference(e.target.value)
+//                 }
+//                 placeholder="Enter UTR / transaction reference"
+//                 className="w-full mt-1 px-3 py-2.5 text-xs border border-gray-200 rounded-lg outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+//               />
+
+//             </div>
+
+//             {/* SCREENSHOT */}
+
+//             <div className="mb-4">
+
+//               <label className="text-[10px] font-bold text-gray-600 uppercase">
+//                 Payment Screenshot
+//               </label>
+
+//               <input
+//                 type="file"
+//                 accept="image/*,.pdf"
+//                 onChange={(e) =>
+//                   setPaymentFile(
+//                     e.target.files?.[0] || null
+//                   )
+//                 }
+//                 className="w-full mt-1 text-xs border border-gray-200 rounded-lg bg-white p-2"
+//               />
+
+//               {paymentFile && (
+//                 <p className="text-[10px] text-gray-500 mt-1 truncate">
+//                   Selected: {paymentFile.name}
+//                 </p>
+//               )}
+
+//             </div>
+
+//             {/* SUBMIT */}
+
+//             <button
+//               onClick={handlePaymentSubmit}
+//               disabled={paymentLoading}
+//               className="w-full bg-teal-800 hover:bg-teal-900 disabled:opacity-60 text-white font-bold py-3 rounded-xl text-xs"
+//             >
+//               {paymentLoading
+//                 ? "Submitting Payment..."
+//                 : "Submit Payment Proof"}
+//             </button>
+
+//           </div>
+//         )}
+
+//       {/* ========================================== */}
+//       {/* PAYMENT SUBMITTED */}
+//       {/* ========================================== */}
+
+//       {paymentSubmitted && (
+//         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+
+//           <div className="flex items-center gap-2">
+
+//             <FiCheckCircle
+//               size={17}
+//               className="text-blue-600"
+//             />
+
+//             <p className="text-xs font-bold text-blue-800">
+//               Payment Proof Submitted
+//             </p>
+
+//           </div>
+
+//           <p className="text-[11px] text-blue-700 mt-1">
+//             Your payment is under admin verification.
+//           </p>
+
+//           {ownershipRequest.paymentReference && (
+//             <p className="text-[10px] text-blue-600 mt-2">
+//               UTR:{" "}
+//               <span className="font-semibold">
+//                 {ownershipRequest.paymentReference}
+//               </span>
+//             </p>
+//           )}
+
+//         </div>
+//       )}
+
+//       {/* ========================================== */}
+//       {/* PAYMENT VERIFIED */}
+//       {/* ========================================== */}
+
+//       {paymentVerified && (
+//         <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+
+//           <div className="flex items-center gap-2">
+
+//             <FiCheckCircle
+//               size={17}
+//               className="text-emerald-600"
+//             />
+
+//             <p className="text-xs font-bold text-emerald-800">
+//               Payment Verified
+//             </p>
+
+//           </div>
+
+//           <p className="text-[11px] text-emerald-700 mt-1">
+//             Your payment has been verified. Final ownership
+//             transfer is being processed by the admin.
+//           </p>
+
+//         </div>
+//       )}
+
+//       {/* ========================================== */}
+//       {/* PAYMENT REJECTED */}
+//       {/* ========================================== */}
+
+//       {paymentRejected && (
+//         <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+
+//           <p className="text-xs font-bold text-red-800">
+//             Payment Proof Rejected
+//           </p>
+
+//           <p className="text-[11px] text-red-700 mt-1">
+//             Please submit your payment proof again with
+//             the correct transaction details.
+//           </p>
+
+//           <button
+//             onClick={() => {
+//               setOwnershipRequest({
+//                 ...ownershipRequest,
+//                 status: "payment_pending",
+//                 paymentStatus: "rejected",
+//               });
+//             }}
+//             className="mt-3 w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-xs"
+//           >
+//             Resubmit Payment
+//           </button>
+
+//         </div>
+//       )}
+
+//     </div>
+//   );
+// }
+
+function StickyCard({
+  property,
+  liked,
+  setLiked,
+  investment,
+  onOwnershipRequest,
+  ownershipLoading,
+  ownershipRequest,
+  setOwnershipRequest,
+}) {
   const dispatch = useDispatch();
   // const [liked, setLiked] = useState(false);
   // const properties = useSelector((state) => state.property.properties);
@@ -228,19 +990,60 @@ function StickyCard({ property, liked, setLiked }){
         </div>
         
       </div>
+     {/* SHARE AVAILABILITY */}
+
+{(() => {
+  const totalShares = Number(property?.totalShares || 0);
+  const sharesLeft = Number(property?.sharesLeft ?? property?.availableShares ?? 0);
+
+  const soldShares = Math.max(totalShares - sharesLeft, 0);
+
+  const fundedPercent =
+    totalShares > 0
+      ? Math.min((soldShares / totalShares) * 100, 100)
+      : 0;
+
+  return (
+    <>
       <div className="mb-1 flex items-center justify-between">
-        <span className="text-xs text-gray-500 font-medium">88% Funded</span>
-        <span className="text-xs text-gray-400">12 / 100 Shares Left</span>
+        <span className="text-xs text-gray-500 font-medium">
+          {fundedPercent.toFixed(1)}% Funded
+        </span>
+
+        <span className="text-xs text-gray-400">
+          {sharesLeft} / {totalShares} Shares Left
+        </span>
       </div>
+
       <div className="w-full bg-gray-100 rounded-full h-1.5 mb-1">
-        <div className="bg-emerald-700 h-1.5 rounded-full" style={{ width: "88%" }}></div>
+        <div
+          className="bg-emerald-700 h-1.5 rounded-full transition-all duration-500"
+          style={{
+            width: `${fundedPercent}%`,
+          }}
+        />
       </div>
-      <p className="text-[10px] text-gray-400 mb-4">Joined by 94 individual investors</p>
+
+      <p className="text-[10px] text-gray-400 mb-4">
+        Joined by {property?.investors || 0} individual investors
+      </p>
+    </>
+  );
+})()}
       <button className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl text-sm transition-colors mb-3">
       <NavLink to={`/checkout/${propertyId}`}>
              Invest Now
         </NavLink>
        </button>
+
+       {/* <FullOwnershipCard
+  property={property}
+  investment={investment}
+  onRequest={onOwnershipRequest}
+  loading={ownershipLoading}
+  ownershipRequest={ownershipRequest}
+  setOwnershipRequest={setOwnershipRequest}
+/> */}
 
 
 
@@ -320,6 +1123,11 @@ const properties = useSelector((state) => state.property.properties);
 
 const [property, setProperty] = useState(null);
 
+const [ownershipLoading, setOwnershipLoading] = useState(false);
+const [ownershipRequest, setOwnershipRequest] = useState(null);
+const [myInvestment, setMyInvestment] = useState(null);
+const [investmentLoading, setInvestmentLoading] = useState(true);
+
 
 const [liked, setLiked] = useState(false);
   
@@ -330,18 +1138,20 @@ const [liked, setLiked] = useState(false);
 
 
   useEffect(() => {
-    // 1️⃣ Redux me mil gaya
-    const existing = properties.find((p) => p._id === id);
+    const existing = properties.find(
+      (p) => p._id === id || p.id === id
+    );
   
     if (existing) {
       setProperty(existing);
     } else {
-      // 2️⃣ Redux empty → API call
       fetchProperty();
     }
-
+  
     if (id) {
       fetchRelatedProperties();
+      fetchMyInvestment();
+      fetchMyOwnershipRequest();
     }
   }, [id, properties]);
 
@@ -374,21 +1184,105 @@ const [liked, setLiked] = useState(false);
 
 
   const fetchProperty = async () => {
+  try {
+    const res = await axios.get(`/api/properties/${id}`);
+
+    console.log("PROPERTY API RESPONSE:", res.data);
+    console.log("PROPERTY IMAGES:", res.data?.media?.images);
+
+    setProperty(res.data);
+  } catch (err) {
+    console.error("Error fetching property:", err);
+  }
+};
+
+  const handleFullOwnershipRequest = async () => {
     try {
-      const res = await axios.get(`/api/properties/${id}`);
+      const investmentId = myInvestment?.investmentId;
   
-      setProperty(res.data);
+      if (!investmentId) {
+        toast.error(
+          "You do not have an approved investment in this property"
+        );
+        return;
+      }
+  
+      setOwnershipLoading(true);
+  
+      const res = await axios.post(
+        "/api/ownership/request",
+        { investmentId }
+      );
+  
+      setOwnershipRequest(res.data?.request || null);
+  
+      toast.success(
+        "Full ownership request created successfully"
+      );
     } catch (err) {
-      console.error("Error fetching property:", err);
+      console.error("FULL OWNERSHIP REQUEST ERROR:", err);
+  
+      toast.error(
+        err.response?.data?.message ||
+          "Unable to create ownership request"
+      );
+    } finally {
+      setOwnershipLoading(false);
     }
   };
-
   const fetchRelatedProperties = async () => {
     try {
       const res = await axios.get(`/api/properties/related/${id}`);
       setRelatedProperties(res.data);
     } catch (err) {
       console.error("Error fetching related properties:", err);
+    }
+  };
+
+  const fetchMyInvestment = async () => {
+    try {
+      setInvestmentLoading(true);
+  
+      const res = await axios.get("/api/portfolio");
+  
+      const investments = res.data?.investments || [];
+  
+      const currentInvestment = investments.find(
+        (inv) =>
+          String(inv.propertyId?._id || inv.propertyId) === String(id)
+      );
+  
+      setMyInvestment(currentInvestment || null);
+    } catch (err) {
+      console.error("Error fetching my investment:", err);
+      setMyInvestment(null);
+    } finally {
+      setInvestmentLoading(false);
+    }
+  };
+
+  const fetchMyOwnershipRequest = async () => {
+    try {
+      const res = await axios.get("/api/ownership/my-requests");
+  
+      const requests = Array.isArray(res.data)
+        ? res.data
+        : res.data?.requests || [];
+  
+      const currentRequest = requests.find(
+        (request) =>
+          String(request.propertyId?._id || request.propertyId) ===
+          String(id)
+      );
+  
+      setOwnershipRequest(currentRequest || null);
+    } catch (err) {
+      console.error(
+        "FETCH OWNERSHIP REQUEST ERROR:",
+        err.response?.data || err
+      );
+  
+      setOwnershipRequest(null);
     }
   };
 
@@ -416,7 +1310,9 @@ const [liked, setLiked] = useState(false);
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="flex items-center gap-2">
                   <MdOutlineSquareFoot size={18} className="text-gray-400 shrink-0" />
-                  <span className="text-xs text-gray-600">12,450 Sq Ft Total Area</span>
+                  <span className="text-xs text-gray-600">
+  {property?.size || "Size not available"}
+</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <HiOutlineLocationMarker size={18} className="text-gray-400 shrink-0" />
@@ -424,11 +1320,15 @@ const [liked, setLiked] = useState(false);
                 </div>
                 <div className="flex items-center gap-2">
                   <MdOutlinePeople size={18} className="text-gray-400 shrink-0" />
-                  <span className="text-xs text-gray-600">3 Triple-Net Anchor Tenants</span>
+                  <span className="text-xs text-gray-600">
+  {property?.tenants || "No tenant information"}
+</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <RiBuilding2Line size={18} className="text-gray-400 shrink-0" />
-                  <span className="text-xs text-gray-600">Grade-A Commercial Tower</span>
+                  <span className="text-xs text-gray-600">
+  {property?.propertyGrade || "Property grade not specified"}
+</span>
                 </div>
               </div>
             </section>
@@ -461,10 +1361,11 @@ const [liked, setLiked] = useState(false);
                       value: `${property?.duration || 0} Years`
                     },
                     {
-                      label: "Locking period",
-                      value: property?.locking_period || "N/A"
+                      label: "Lock-in Period",
+                      value: `${property?.lockInYears ?? 2} ${
+                        (property?.lockInYears ?? 2) === 1 ? "Year" : "Years"
+                      }`
                     }
-                  
 
                 ].map(item => (
                   <div key={item.label}>
@@ -476,7 +1377,7 @@ const [liked, setLiked] = useState(false);
             </section>
 
             <div className="mb-6">
-              <ReturnsCalculator />
+            <ReturnsCalculator property={property} />
             </div>
 
             <section className="bg-white rounded-2xl border border-gray-200 p-5 mb-6">
@@ -586,6 +1487,11 @@ const [liked, setLiked] = useState(false);
   property={property}
   liked={liked}
   setLiked={setLiked}
+  investment={myInvestment}
+  onOwnershipRequest={handleFullOwnershipRequest}
+  ownershipLoading={ownershipLoading}
+  ownershipRequest={ownershipRequest}
+  setOwnershipRequest={setOwnershipRequest}
 />
           </div>
 

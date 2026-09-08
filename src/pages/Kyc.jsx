@@ -158,12 +158,13 @@ function BasicInfoForm({setActive, edit, setEdit}) {
       try {
         const res = await axios.get("/api/kyc");
   
-       
-        if (res.data && res.data.isKycCompleted) {
+        if (res.data) {
           setForm({
             name: res.data.fullName || "",
             email: res.data.email || "",
-            dob: res.data.dob?.slice(0, 10) || "",
+            dob: res.data.dob
+              ? res.data.dob.slice(0, 10)
+              : "",
             address: res.data.address || "",
           });
         }
@@ -385,33 +386,54 @@ export default function KYCVerification() {
   const [active, setActive] = useState("basic");
   const [edit, setEdit] = useState("");
   const location = useLocation();
+
+  const propertyId =
+  location.state?.propertyId ||
+  location.state?.property?._id ||
+  location.state?.property?.id;
+
 const property = location.state?.property;
 
-  useEffect(() => {
-    const fetchKyc = async () => {
-      try {
-        const res = await axios.get("/api/kyc");
-  
-        if (!active) {   // 🔥 IMPORTANT
-          const stepMap = {
-            1: "basic",
-            2: "pan",
-            3: "id",
-            4: "nominee",
-            5: "bank",
-            6: "review",
-          };
-  
-          setActive(stepMap[res.data.currentStep] || "basic");
-        }
-  
-      } catch (err) {
-        console.log(err);
+const returnToInvestment =
+  location.state?.returnToInvestment || false;
+
+const investmentShares =
+  location.state?.shares;
+
+const investmentReferralCode =
+  location.state?.referralCode || "";
+
+useEffect(() => {
+  const fetchKyc = async () => {
+    try {
+      const res = await axios.get("/api/kyc");
+
+      if (!res.data) {
+        setActive("basic");
+        return;
       }
-    };
-  
-    fetchKyc();
-  }, []);
+
+      const stepMap = {
+        1: "basic",
+        2: "pan",
+        3: "id",
+        4: "nominee",
+        5: "bank",
+        6: "review",
+      };
+
+      setActive(
+        stepMap[res.data.currentStep] || "basic"
+      );
+
+    } catch (err) {
+      console.log(err);
+      setActive("basic");
+    }
+  };
+
+  fetchKyc();
+}, []);
 
 
 
@@ -448,7 +470,18 @@ const property = location.state?.property;
         {active === "id" && <AadharVerify  setActive={setActive} edit={edit} setEdit={setEdit} />}
         {active === "nominee" && <Nominee setActive={setActive} edit={edit} setEdit={setEdit} />}
         {active === "bank" && <BankDetails setActive={setActive} edit={edit} setEdit={setEdit} />}
-        {active === "review" && <KycReviewandSubmit  setActive={setActive}  edit={edit} setEdit={setEdit} />}
+        {active === "review" && (
+          <KycReviewandSubmit
+  setActive={setActive}
+  edit={edit}
+  setEdit={setEdit}
+  returnToInvestment={returnToInvestment}
+  property={property}
+  propertyId={propertyId}
+  shares={investmentShares}
+  referralCode={investmentReferralCode}
+/>
+)}
    
       </main>
     </div>

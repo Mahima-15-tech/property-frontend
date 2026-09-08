@@ -1,5 +1,5 @@
 import OTPVerify from "../components/OTPVerify";
-import { NavLink } from "react-router-dom";
+import { NavLink, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -18,13 +18,19 @@ import {
 import Referral from "../components/Referral";
 
 const Signup = () => {
-  const [page, setPage] = useState(0);
+
+    const [page, setPage] = useState(0);
+  
+    const [searchParams] = useSearchParams();
+  
+    const referralCode = searchParams.get("ref") || "";
 
   const [fullName, setFullName] = useState("");
-  const [mobile, setMobile] = useState("");
+  const [email, setEmail] = useState("");
   const [agreed, setAgreed] = useState(false);
+  
   const [fullNameErr, setFullNameErr] = useState("");
-  const [mobileErr, setMobileErr] = useState("");
+  const [emailErr, setEmailErr] = useState("");
   const [agreeErr, setAgreeErr] = useState("");
 
   useEffect(() => {
@@ -34,43 +40,47 @@ const Signup = () => {
   // console.log('afrre', agreed)
   const features = [
     { icon: <FiShield />, label: "No KYC during signup" },
-    { icon: <FiSmartphone />, label: "Secure OTP Login" },
+    { icon: <FiSmartphone />, label: "Secure Email OTP Login" },
     { icon: <FiAward />, label: "Verified Investment Platform" },
     { icon: <FiTrendingUp />, label: "Easy Portfolio Tracking" },
   ];
 
   const submitHandler = async (e) => {
     e.preventDefault();
-
+  
     if (!fullName.trim() || fullName.trim().length < 3) {
       setFullNameErr("Full name is required ❌");
       return;
     }
-
+  
+    if (!email.trim()) {
+      setEmailErr("Email is required ❌");
+      return;
+    }
+  
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  
+    if (!emailRegex.test(email)) {
+      setEmailErr("Enter a valid email address ❌");
+      return;
+    }
+  
     if (!agreed) {
-      setAgreeErr("Please fill the checkbox ❌");
+      setAgreeErr("Please accept Terms & Conditions ❌");
       return;
     }
-
-    if (!mobile.trim()) {
-      setMobileErr("Mobile No. is required ❌");
-      return;
-    }
-
-    // console.log('signup')
-    const obj = {
-      name: fullName,
-      phone: mobile,
-      agree: agreed,
-    };
-
+  
     try {
       const res = await axios.post("/api/auth/send-otp", {
-        name: fullName,
-        phone: mobile,
-        role: "investor"
+        name: fullName.trim(),
+        email: email.trim().toLowerCase(),
+        role: "investor",
+        mode: "signup",
+        referralCode: referralCode.trim().toUpperCase() || undefined,
       });
-
+  
+      console.log("OTP SENT:", res.data);
+  
       setPage(1);
     } catch (error) {
       toast.error(error.response?.data?.message || "Error");
@@ -130,6 +140,18 @@ const Signup = () => {
                   Get started in just a few steps
                 </p>
 
+                {referralCode && (
+  <div className="mb-6 bg-[#f0f7f4] border border-[#d1fae5] rounded-xl px-4 py-3">
+    <p className="text-sm text-[#14532d] font-semibold">
+      Referral Applied ✓
+    </p>
+
+    <p className="text-xs text-gray-500 mt-1">
+      You were referred by an existing investor.
+    </p>
+  </div>
+)}
+
                 <div className="mb-6">
                   <label className="block text-[#3d1818] text-sm font-semibold mb-2">
                     Full Name
@@ -151,43 +173,32 @@ const Signup = () => {
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-[#1a1a1a] text-sm font-semibold mb-2">
-                    Mobile Number
-                  </label>
-                  <div className="gap-2 flex">
-                    <div className="bg-[#f0f4f8] w-14 rounded-xl px-3 sm:px-4 py-3.5 text-sm font-medium text-gray-700 flex items-center flex-shrink-0">
-                      +91
-                    </div>
-                    <div className="w-full">
-                      <input
-                        type="tel"
-                        placeholder="Enter your mobile number"
-                        value={mobile}
-                        maxLength={10}
-                        minLength={10}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          // sirf numbers allow
-                          if (!/^\d*$/.test(value)) return;
-                          setMobile(value);
-                          // typing pe error hata
-                          setMobileErr("");
-                        }}
-                        className=" w-full    bg-[#f0f4f8] rounded-xl px-4 py-3.5 text-sm text-gray-700 placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#14532d]/30 transition-all min-w-0"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className=" ">
-                    {mobileErr && (
-                      <p className="text-red-500 text-xs mt-1">{mobileErr}</p>
-                    )}
-                  </div>
-                  <p className="flex items-center gap-1.5 text-xs text-gray-500 mt-2">
-                    <FiInfo className="flex-shrink-0 text-gray-400" />
-                    We'll send an OTP to verify your number
-                  </p>
-                </div>
+  <label className="block text-[#1a1a1a] text-sm font-semibold mb-2">
+    Email Address
+  </label>
+
+  <input
+    type="email"
+    placeholder="Enter your email address"
+    value={email}
+    onChange={(e) => {
+      setEmail(e.target.value);
+      setEmailErr("");
+    }}
+    className="w-full bg-[#f0f4f8] rounded-xl px-4 py-3.5 text-sm text-gray-700 placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#14532d]/30 transition-all"
+  />
+
+  {emailErr && (
+    <p className="text-red-500 text-xs mt-1">
+      {emailErr}
+    </p>
+  )}
+
+  <p className="flex items-center gap-1.5 text-xs text-gray-500 mt-2">
+    <FiInfo className="flex-shrink-0 text-gray-400" />
+    We'll send an OTP to verify your email
+  </p>
+</div>
 
                 <div className="bg-[#f0f7f4] border border-[#d1fae5] rounded-xl px-4 py-3.5 flex items-start gap-3 mb-6">
                   <FiShield className="text-[#14532d] text-lg flex-shrink-0 mt-0.5" />
@@ -269,20 +280,24 @@ const Signup = () => {
           </div>
         </div>
 
-        {page == 1 && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl p-6 w-[90%] max-w-lg  max-h-lg relative">
-              <button
-                onClick={() => setPage(0)}
-                className="absolute top-1 right-2 text-gray-500 text-xl"
-              >
-                ✕
-              </button>
-
-              <OTPVerify mobile={mobile} setPage={setPage} />
-            </div>
-          </div>
-        )}
+        {page === 1 && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-2xl p-6 w-[90%] max-w-lg max-h-lg relative">
+      <button
+        onClick={() => setPage(0)}
+        className="absolute top-1 right-2 text-gray-500 text-xl"
+      >
+        ✕
+      </button>
+      <OTPVerify
+  email={email}
+  setPage={setPage}
+  mode="signup"
+  role="investor"
+/>
+    </div>
+  </div>
+)}
       </div>
 
       <div>

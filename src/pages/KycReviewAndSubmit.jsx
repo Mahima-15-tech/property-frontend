@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { FiHelpCircle, FiBell, FiUser, FiCreditCard, FiFileText, FiCamera, FiCheckSquare, FiShield, FiCheck } from "react-icons/fi";
 import { BsBank2 } from "react-icons/bs";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 // import { useSelector } from "react-redux";
 import axios from "../utils/axios";
 
@@ -78,8 +78,18 @@ const handleSubmit = async () => {
   }
 };
 
-export default function KycReviewandSubmit({setActive, edit, setEdit}) {
+export default function KycReviewandSubmit({
+  setActive,
+  edit,
+  setEdit,
+  returnToInvestment,
+  property,
+  propertyId,
+  shares,
+  referralCode,
+}) {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [activeNav, setActiveNav] = useState(6);
   const [confirmed, setConfirmed] = useState(false);
@@ -106,9 +116,32 @@ export default function KycReviewandSubmit({setActive, edit, setEdit}) {
   const onSubmit = async () => {
     try {
       await axios.post("/api/kyc/submit");
-      navigate('/kyc-submission');
+  
+      // ==========================================
+      // USER INVESTMENT SE KYC PAR AAYA THA
+      // ==========================================
+  
+      if (returnToInvestment && propertyId) {
+        navigate(`/checkout/${propertyId}`, {
+          state: {
+            shares,
+            referralCode,
+          },
+        });
+      
+        return;
+      }
+  
+      // Normal KYC flow
+      navigate("/kyc-submission");
+  
     } catch (err) {
-      console.log(err);
+      console.log("KYC SUBMIT ERROR:", err);
+  
+      alert(
+        err.response?.data?.message ||
+        "Failed to submit KYC"
+      );
     }
   };
 
