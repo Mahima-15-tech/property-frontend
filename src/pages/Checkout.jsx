@@ -116,7 +116,7 @@ function PropertyCard({ property }) {
             </p>
 
             <p className="text-gray-800 text-sm font-semibold">
-              ₹{Number(property.sharePrice || 0).toLocaleString("en-IN")}
+            ₹{getSharePrice(property).toLocaleString("en-IN")}
             </p>
           </div>
 
@@ -135,7 +135,7 @@ function PropertyCard({ property }) {
 
 function ShareSelector({ shares, setShares, property }) {
 
-  const price = Number(property?.sharePrice || 0);
+  const price = getSharePrice(property);
 
   const totalShares = Number(property?.totalShares || 0);
 
@@ -319,7 +319,13 @@ function ShareSelector({ shares, setShares, property }) {
     </div>
   );
 }
-
+const getSharePrice = (property) => {
+  return Number(
+    property?.pricePerShare ??
+    property?.sharePrice ??
+    0
+  );
+};
 
 // ======================================================
 // REFERRAL CODE
@@ -373,7 +379,7 @@ function ReferralCode({
     <div>
 
       <p className="text-gray-500 text-xs font-semibold tracking-wide uppercase mb-2">
-        Broker Referral Code (Optional)
+       Referral Code (Optional)
       </p>
 
       <div className="flex gap-2 items-center">
@@ -464,7 +470,7 @@ function InvestmentBreakdown({
   applied,
   property,
 }) {
-  const price = Number(property?.sharePrice || 0);
+  const price = getSharePrice(property);
 
   const investment = shares * price;
 
@@ -577,8 +583,7 @@ function InvestmentSummary({
   property,
 }) {
 
-  const price = property?.sharePrice || 0;
-
+  const price = getSharePrice(property);
   const investment = shares * price;
 
   const roi = property?.roi || 0;
@@ -813,10 +818,9 @@ function PaymentModal({
   }
 
 
-  const investmentAmount =
-  shares *
-  Number(property?.sharePrice || 0);
+  const price = getSharePrice(property);
 
+  const investmentAmount = shares * price;
 // Broker referral gives NO discount
 const payableAmount = investmentAmount;
 
@@ -1433,24 +1437,24 @@ useState(false);
 
 
   const fetchProperty = async () => {
-
     try {
-
-      const res = await axios.get(
-        `/api/properties/${id}`
-      );
-
-      setProperty(res.data);
-
+      const res = await axios.get(`/api/properties/${id}`);
+  
+      console.log("PROPERTY RESPONSE:", res.data);
+  
+      const propertyData =
+        res.data?.property ||
+        res.data?.data ||
+        res.data;
+  
+      console.log("FINAL PROPERTY:", propertyData);
+      console.log("FINAL SHARE PRICE:", propertyData?.sharePrice);
+  
+      setProperty(propertyData);
+  
     } catch (err) {
-
-      console.error(
-        "Error fetching property:",
-        err
-      );
-
+      console.error("Error fetching property:", err);
     }
-
   };
 
   // ======================================================
@@ -1822,9 +1826,8 @@ useEffect(() => {
             propertyName:
               property.name,
 
-            amount:
-              property.sharePrice *
-              shares,
+              amount:
+              getSharePrice(property) * shares,
 
             shares,
 

@@ -125,14 +125,35 @@ export default function OTPVerify({ email, role = "investor", mode = "signup", s
       console.log("VERIFY RESPONSE:", res.data);
   
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("role", res.data.role);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+  
+      // Backend role de ya prop wala role use karo
+      localStorage.setItem(
+        "role",
+        res.data.role || role
+      );
+  
+      localStorage.setItem(
+        "loginType",
+        res.data.role || role
+      );
+  
+      localStorage.setItem(
+        "user",
+        JSON.stringify(res.data.user)
+      );
   
       toast.success(res.data.message);
   
-      setPage(0);
+      setPage?.(0);
   
-      navigate("/portfolio");
+      // =========================
+      // ROLE BASED REDIRECT
+      // =========================
+      if ((res.data.role || role) === "broker") {
+        navigate("/broker-dashboard");
+      } else {
+        navigate("/portfolio");
+      }
   
     } catch (error) {
       toast.error(
@@ -142,7 +163,6 @@ export default function OTPVerify({ email, role = "investor", mode = "signup", s
       );
     }
   };
-
   // MASK EMAIL
   const maskEmail = (email) => {
     if (!email) return "";

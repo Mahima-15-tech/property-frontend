@@ -48,36 +48,35 @@ export default function BrokerLogin() {
   const handleSendOtp = async () => {
     try {
       setError("");
-
+  
       if (!email.trim()) {
         return setError("Email address is required");
       }
-
+  
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
+  
       if (!emailRegex.test(email.trim())) {
         return setError("Enter a valid email address");
       }
-
+  
       const res = await axios.post("/api/auth/send-otp", {
         email: email.trim().toLowerCase(),
         role: "broker",
+        mode: "login",
       });
-
+  
       console.log("OTP SENT RESPONSE:", res.data);
-
-      // OTP page only after successful response
+  
       setStep(2);
-
+  
     } catch (err) {
       console.log("ERROR:", err.response?.data);
-
+  
       setError(
         err.response?.data?.message || "Something went wrong"
       );
     }
   };
-
   return (
     <div className="h-full flex items-center justify-center">
       <div className="w-full bg-gray-50 flex flex-col lg:flex-row rounded-2xl overflow-hidden shadow-xl">
@@ -229,10 +228,11 @@ export default function BrokerLogin() {
             {/* STEP 2 - EMAIL OTP VERIFY */}
             {step === 2 && (
               <OTPVerify
-                email={email}
-                role="broker"
-                setPage={setStep}
-              />
+              email={email}
+              role="broker"
+              mode="login"
+              setPage={setStep}
+            />
             )}
 
           </div>

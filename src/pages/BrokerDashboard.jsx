@@ -1875,126 +1875,268 @@ function Sidebar({
   setShowLogoutConfirm,
 }) {
   return (
-    <aside
-      className={`fixed left-0 top-0 z-50 flex h-screen w-[250px] flex-col border-r border-slate-200 bg-white shadow-xl transition-transform duration-300 lg:sticky lg:top-0 lg:z-30 lg:h-screen lg:translate-x-0 lg:shadow-none ${
-        mobileOpen
-          ? "translate-x-0"
-          : "-translate-x-full"
-      }`}
-    >
+    <>
+      {/* ================= DESKTOP SIDEBAR ================= */}
 
-      {/* LOGO */}
+     {/* ================= DESKTOP SIDEBAR ================= */}
 
-      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-5">
+     <aside
+  className="
+    fixed left-0 top-[75px] z-40
+    hidden lg:flex
+    h-[calc(100vh-75px)] w-[270px]
+    flex-col
+    border-r border-slate-200/80
+    bg-white
+    shadow-[10px_0_30px_rgba(15,23,42,0.04)]
+  "
+>
+        {/* ================= BRAND ================= */}
 
-        <div className="flex items-center gap-3">
+        <div className="flex h-[88px] items-center border-b border-slate-100 px-6">
+          <div className="flex items-center gap-3">
 
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 shadow-sm">
-            <HiBriefcase className="text-lg text-white" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-900 to-slate-700 shadow-lg shadow-slate-900/20">
+              <HiBriefcase className="text-xl text-white" />
+            </div>
+
+            <div>
+              <p className="text-sm font-bold tracking-tight text-slate-900">
+                Broker Portal
+              </p>
+
+              <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                Partner Workspace
+              </p>
+            </div>
+
           </div>
+        </div>
 
-          <div>
 
-            <p className="text-sm font-bold leading-tight text-slate-900">
-              Broker Portal
-            </p>
+        {/* ================= NAVIGATION ================= */}
 
-            <p className="mt-0.5 text-[10px] font-medium text-slate-400">
-              Partner Dashboard
-            </p>
+        <div className="flex-1 overflow-y-auto px-4 py-6">
+
+          <p className="mb-4 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+            Workspace
+          </p>
+
+          <div className="space-y-2">
+
+            {navItems.map(({ icon: Icon, label, type }) => {
+
+              const isActive = active === type;
+
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => {
+                    setActive(type);
+                  }}
+                  className={`
+                    group relative
+                    flex w-full items-center gap-3
+                    rounded-2xl
+                    px-4 py-3.5
+                    text-left text-sm font-semibold
+                    transition-all duration-200
+                    ${
+                      isActive
+                        ? "bg-slate-900 text-white shadow-lg shadow-slate-900/15"
+                        : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                    }
+                  `}
+                >
+
+                  <div
+                    className={`
+                      flex h-9 w-9 items-center justify-center
+                      rounded-xl transition-all
+                      ${
+                        isActive
+                          ? "bg-white/10 text-white"
+                          : "bg-slate-100 text-slate-500 group-hover:bg-white"
+                      }
+                    `}
+                  >
+                    <Icon className="text-lg" />
+                  </div>
+
+                  <span>
+                    {label}
+                  </span>
+
+                  {isActive && (
+                    <span className="ml-auto h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.9)]" />
+                  )}
+
+                </button>
+              );
+            })}
 
           </div>
 
         </div>
 
-        <button
-          type="button"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 lg:hidden"
-          onClick={() =>
-            setMobileOpen(false)
+
+        {/* ================= ACCOUNT ================= */}
+
+        <div className="border-t border-slate-100 p-4">
+
+          <div className="mb-3 rounded-2xl bg-slate-50 p-4">
+
+            <div className="flex items-center gap-3">
+
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-sm font-bold text-emerald-700">
+                B
+              </div>
+
+              <div className="min-w-0">
+
+                <p className="truncate text-xs font-bold text-slate-800">
+                  Broker Account
+                </p>
+
+                <div className="mt-1 flex items-center gap-1.5">
+
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+
+                  <span className="text-[10px] font-medium text-emerald-600">
+                    Account Active
+                  </span>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <button
+            type="button"
+            onClick={() =>
+              setShowLogoutConfirm(true)
+            }
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-xs font-semibold text-slate-500 transition hover:bg-red-50 hover:text-red-600"
+          >
+            <HiArrowRightOnRectangle className="text-lg" />
+
+            Sign Out
+          </button>
+
+        </div>
+
+      </aside>
+
+
+      {/* ================= MOBILE SIDEBAR ================= */}
+
+      <aside
+        className={`
+          fixed left-0 top-0 z-50
+          flex h-screen w-[280px]
+          flex-col bg-white
+          shadow-2xl
+          transition-transform duration-300
+          lg:hidden
+          ${
+            mobileOpen
+              ? "translate-x-0"
+              : "-translate-x-full"
           }
-        >
-          <RxCross1 />
-        </button>
+        `}
+      >
 
-      </div>
+        {/* MOBILE HEADER */}
 
-      {/* NAV */}
+        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-5">
 
-      <nav className="flex-1 px-3 py-5">
+          <div className="flex items-center gap-3">
 
-        <p className="mb-3 px-3 text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">
-          Workspace
-        </p>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900">
+              <HiBriefcase className="text-lg text-white" />
+            </div>
 
-        {navItems.map(
-          ({
-            icon: Icon,
-            label,
-            type,
-          }) => (
-            <button
-              type="button"
-              key={type}
-              onClick={() => {
-                setActive(type);
-                setMobileOpen(false);
-              }}
-              className={`mb-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-xs font-semibold transition-all ${
-                active === type
-                  ? "bg-slate-900 text-white shadow-sm"
-                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
-              }`}
-            >
-              <Icon className="text-lg" />
+            <div>
+              <p className="text-sm font-bold text-slate-900">
+                Broker Portal
+              </p>
 
-              <span>{label}</span>
+              <p className="text-[10px] text-slate-400">
+                Partner Workspace
+              </p>
+            </div>
 
-              {active === type && (
-                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              )}
+          </div>
 
-            </button>
-          )
-        )}
 
-      </nav>
+          <button
+            type="button"
+            onClick={() =>
+              setMobileOpen(false)
+            }
+            className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-500"
+          >
+            <RxCross1 />
+          </button>
 
-      {/* BOTTOM */}
+        </div>
 
-      <div className="border-t border-slate-100 p-3">
 
-        <div className="mb-2 rounded-xl bg-slate-50 p-3">
+        {/* MOBILE NAV */}
 
-          <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
-            Partner Account
+        <div className="flex-1 overflow-y-auto px-4 py-5">
+
+          <p className="mb-4 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+            Workspace
           </p>
 
-          <p className="mt-1 text-xs font-semibold text-slate-700">
-            Broker
-          </p>
+          <div className="space-y-2">
 
-          <div className="mt-2 flex items-center gap-1.5 text-[9px] font-medium text-emerald-600">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            Account Active
+            {navItems.map(({ icon: Icon, label, type }) => {
+
+              const isActive = active === type;
+
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => {
+                    setActive(type);
+                    setMobileOpen(false);
+                  }}
+                  className={`
+                    flex w-full items-center gap-3
+                    rounded-xl px-4 py-3
+                    text-sm font-semibold
+                    transition-all
+                    ${
+                      isActive
+                        ? "bg-slate-900 text-white"
+                        : "text-slate-500 hover:bg-slate-50"
+                    }
+                  `}
+                >
+
+                  <Icon className="text-lg" />
+
+                  {label}
+
+                </button>
+              );
+            })}
+
           </div>
 
         </div>
 
-        <button
-          type="button"
-          onClick={() =>
-            setShowLogoutConfirm(true)
-          }
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-xs font-semibold text-slate-500 transition hover:bg-red-50 hover:text-red-600"
-        >
-          <HiArrowRightOnRectangle className="text-lg" />
-          Sign Out
-        </button>
+      </aside>
 
-      </div>
-
-    </aside>
+    </>
   );
 }
 
@@ -2147,36 +2289,38 @@ export default function BrokerDashboard() {
     <>
       <div className="min-h-screen bg-slate-50 font-sans">
 
-        <div className="flex min-h-screen">
+      <div className="h-[calc(100vh-75px)] bg-slate-50 font-sans overflow-hidden">
 
-          {/* SIDEBAR */}
+<Sidebar
+  mobileOpen={mobileOpen}
+  setMobileOpen={setMobileOpen}
+  active={active}
+  setActive={setActive}
+  setShowLogoutConfirm={setShowLogoutConfirm}
+/>
 
-          <Sidebar
-            mobileOpen={mobileOpen}
-            setMobileOpen={setMobileOpen}
-            active={active}
-            setActive={setActive}
-            setShowLogoutConfirm={
-              setShowLogoutConfirm
-            }
-          />
+{/* MOBILE OVERLAY */}
+{mobileOpen && (
+  <div
+    className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm lg:hidden"
+    onClick={() => setMobileOpen(false)}
+  />
+)}
 
-          {/* MOBILE OVERLAY */}
+{/* RIGHT SIDE CONTENT */}
+<main
+  className="
+    ml-0
+    h-full
+    min-w-0
+    overflow-y-auto
+    p-4
+    sm:p-6
+    lg:ml-[270px]
+    lg:p-8
+  "
+>
 
-          {mobileOpen && (
-            <div
-              className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm lg:hidden"
-              onClick={() =>
-                setMobileOpen(false)
-              }
-            />
-          )}
-
-          {/* =================================================
-              CONTENT
-          ================================================= */}
-
-          <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
 
             {/* OVERVIEW */}
 

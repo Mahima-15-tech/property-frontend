@@ -22,6 +22,7 @@ import {
   FiXCircle,
   FiCheckCircle,
   FiLayers,
+  FiLogOut,
   FiTrendingUp,
  FiDollarSign, 
 FiTrendingDown, 
@@ -183,6 +184,7 @@ const FullOwnershipCard = ({
   const [paymentReference, setPaymentReference] = useState("");
   const [paymentFile, setPaymentFile] = useState(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
+
 
   if (!property || !investment || !property.enableFullOwnership) {
     return null;
@@ -834,6 +836,7 @@ const ReturnHistory = ({
   onRequest,
   loading,
   setOwnershipRequest,
+  onExitRequest,
 }) => {
   if (!investment) return null;
 
@@ -841,6 +844,10 @@ const ReturnHistory = ({
   const isProfitable = profit >= 0;
   const invested = Number(investment.invested || 0);
   const currentValue = Number(investment.currentValue || 0);
+  const [exitShares, setExitShares] = useState("");
+const [exitLoading, setExitLoading] = useState(false);
+const [eligibleExitDate, setEligibleExitDate] = useState(null);
+const [exitError, setExitError] = useState("");
 
   // Profit percentage calculation safely
   const profitPercentage = invested > 0 
@@ -985,6 +992,222 @@ const ReturnHistory = ({
         </div>
       )}
 
+{/* Exit Request */}
+{/* =========================================================
+    EXIT REQUEST
+========================================================= */}
+
+<div className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
+
+  {/* Header */}
+  <div className="flex items-start justify-between gap-4 mb-5">
+
+    <div>
+      <div className="flex items-center gap-2">
+        <div className="w-9 h-9 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
+          <FiLogOut size={17} />
+        </div>
+
+        <div>
+          <h4 className="font-bold text-gray-900 text-sm">
+            Exit Investment
+          </h4>
+
+          <p className="text-xs text-gray-500 mt-0.5">
+            Submit a request to exit your investment shares.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+  {/* Eligible Exit Date Alert */}
+  {eligibleExitDate && (
+    <div className="mb-5 bg-amber-50 border border-amber-200 rounded-xl p-4">
+
+      <div className="flex gap-3">
+
+        <div className="text-amber-600 mt-0.5">
+          <FiClock size={18} />
+        </div>
+
+        <div>
+          <p className="text-sm font-semibold text-amber-800">
+            Investment is currently under lock-in period
+          </p>
+
+          <p className="text-xs text-amber-700 mt-1">
+            You will be eligible to request an exit from:
+          </p>
+
+          <p className="text-sm font-bold text-amber-900 mt-1">
+            {new Date(eligibleExitDate).toLocaleDateString(
+              "en-IN",
+              {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              }
+            )}
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+  )}
+
+
+  {/* Error Message */}
+  {exitError && !eligibleExitDate && (
+    <div className="mb-4 bg-rose-50 border border-rose-100 rounded-lg px-3 py-2">
+      <p className="text-xs text-rose-600">
+        {exitError}
+      </p>
+    </div>
+  )}
+
+
+  {/* Form */}
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+
+    <div>
+
+      <label className="text-xs font-semibold text-gray-700 mb-2 block">
+        Number of Shares to Exit
+      </label>
+
+      <input
+        type="number"
+        min="1"
+        max={investment.shares || 0}
+        value={exitShares}
+        onChange={(e) => {
+          setExitShares(e.target.value);
+          setExitError("");
+        }}
+        placeholder={`Maximum ${investment.shares || 0} shares`}
+        disabled={exitLoading || !!eligibleExitDate}
+        className="w-full border border-gray-200 rounded-lg px-3 py-3 text-sm outline-none focus:border-emerald-500 disabled:bg-gray-100 disabled:text-gray-400"
+      />
+
+      <p className="text-[11px] text-gray-400 mt-1.5">
+        You currently own{" "}
+        <span className="font-semibold text-gray-600">
+          {investment.shares || 0}
+        </span>{" "}
+        shares.
+      </p>
+
+    </div>
+
+
+    <button
+      type="button"
+      disabled={exitLoading || !!eligibleExitDate}
+      onClick={async () => {
+
+        if (!exitShares || Number(exitShares) <= 0) {
+          toast.error("Please enter the number of shares");
+          return;
+        }
+
+        if (
+          Number(exitShares) >
+          Number(investment.shares || 0)
+        ) {
+          toast.error(
+            "You cannot exit more shares than you own"
+          );
+          return;
+        }
+
+        try {
+
+          setExitLoading(true);
+          setExitError("");
+          setEligibleExitDate(null);
+
+          await onExitRequest(Number(exitShares));
+
+          setExitShares("");
+
+          toast.success(
+            "Exit request submitted successfully"
+          );
+
+        } catch (error) {
+
+          console.error(
+            "Exit request failed:",
+            error
+          );
+
+          const data = error?.response?.data;
+
+          // LOCK-IN PERIOD
+          if (data?.eligibleExitDate) {
+
+            setEligibleExitDate(
+              data.eligibleExitDate
+            );
+
+            toast.error(
+              "Investment is still under lock-in period"
+            );
+
+          } else {
+
+            setExitError(
+              data?.message ||
+              "Failed to submit exit request"
+            );
+
+            toast.error(
+              data?.message ||
+              "Failed to submit exit request"
+            );
+          }
+
+        } finally {
+
+          setExitLoading(false);
+
+        }
+
+      }}
+      className={`w-full font-semibold py-3 px-4 rounded-lg text-sm transition-all ${
+        eligibleExitDate
+          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+          : "bg-rose-600 hover:bg-rose-700 text-white"
+      } disabled:opacity-70`}
+    >
+
+      {exitLoading
+        ? "Submitting..."
+        : eligibleExitDate
+        ? "Exit Locked"
+        : "Request Exit"}
+
+    </button>
+
+  </div>
+
+
+  {/* Footer */}
+  <div className="mt-4 pt-4 border-t border-gray-100">
+
+    <p className="text-[11px] text-gray-400 leading-relaxed">
+      Your exit request will be reviewed by the administrator.
+      The final exit process will begin after approval.
+    </p>
+
+  </div>
+
+</div>
     </div>
   );
 };
@@ -1001,6 +1224,7 @@ const InvestmentCard = ({
   onRequest,
   loading,
   setOwnershipRequest,
+  onExitRequest,
 }) => {
   return (
     <div className={`bg-white border transition-all duration-300 rounded-2xl overflow-hidden ${
@@ -1095,18 +1319,22 @@ const InvestmentCard = ({
       {/* Expanded Content with Divider */}
       {expanded && (
         <div className="border-t border-gray-100 bg-gray-50/50 p-4 sm:p-6 animate-fadeIn">
-          <ReturnHistory
-            investment={property}
-            ownershipRequest={ownershipRequest}
-            onRequest={onRequest}
-            loading={loading}
-            setOwnershipRequest={setOwnershipRequest}
-          />
+         <ReturnHistory
+  investment={property}
+  ownershipRequest={ownershipRequest}
+  onRequest={onRequest}
+  loading={loading}
+  setOwnershipRequest={setOwnershipRequest}
+  onExitRequest={onExitRequest}
+/>
         </div>
       )}
     </div>
   );
 };
+
+
+
 
 /* =========================================================
    ACTIVE INVESTMENTS
@@ -1205,6 +1433,31 @@ const ActiveInvestments = ({ data }) => {
     }
   };
 
+  const handleExitRequest = async (investment, shares) => {
+    try {
+      const res = await axios.post("/api/portfolio/exit", {
+        investmentId: investment.investmentId,
+        shares: Number(shares),
+      });
+  
+      toast.success(
+        res.data?.message || "Exit request submitted successfully"
+      );
+  
+      return res.data;
+  
+    } catch (error) {
+      console.error("EXIT REQUEST ERROR:", error);
+  
+      toast.error(
+        error.response?.data?.message ||
+        "Failed to submit exit request"
+      );
+  
+      throw error;
+    }
+  };
+
   if (!data || data.length === 0) {
     return (
       <div className="bg-white border border-gray-200 rounded-xl p-8 text-center">
@@ -1247,6 +1500,9 @@ const ActiveInvestments = ({ data }) => {
           }
           loading={
             ownershipLoading[investment.investmentId]
+          }
+          onExitRequest={(shares) =>
+            handleExitRequest(investment, shares)
           }
           setOwnershipRequest={(request) => {
             setOwnershipRequests((prev) => ({
