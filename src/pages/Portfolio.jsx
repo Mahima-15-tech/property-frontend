@@ -186,7 +186,7 @@ const FullOwnershipCard = ({
   const [paymentLoading, setPaymentLoading] = useState(false);
 
 
-  if (!property || !investment || !property.enableFullOwnership) {
+  if (!property || !investment) {
     return null;
   }
 
@@ -979,18 +979,16 @@ const [exitError, setExitError] = useState("");
       )}
 
       {/* Full Ownership Options */}
-      {investment.enableFullOwnership && (
-        <div className="pt-1">
-          <FullOwnershipCard
-            property={investment}
-            investment={investment}
-            ownershipRequest={ownershipRequest}
-            onRequest={onRequest}
-            loading={loading}
-            setOwnershipRequest={setOwnershipRequest}
-          />
-        </div>
-      )}
+      <div className="pt-1">
+  <FullOwnershipCard
+    property={investment}
+    investment={investment}
+    ownershipRequest={ownershipRequest}
+    onRequest={onRequest}
+    loading={loading}
+    setOwnershipRequest={setOwnershipRequest}
+  />
+</div>
 
 {/* Exit Request */}
 {/* =========================================================
@@ -3548,33 +3546,40 @@ export default function Portfolio() {
   }, []);
 
   useEffect(() => {
-    if (!portfolioData)
-      return;
-
-    const fetchRelated =
-      async () => {
-        try {
-          const firstPropertyId =
-            portfolioData
-              ?.investments?.[0]
-              ?.propertyId;
-
-          if (!firstPropertyId)
-            return;
-
-          const res =
-            await axios.get(
-              `/api/properties/related/${firstPropertyId}`
-            );
-
-          setRelatedProperties(
-            res.data || []
-          );
-        } catch (err) {
-          console.log(err);
+    if (!portfolioData) return;
+  
+    const fetchRelated = async () => {
+      try {
+        const firstPropertyId =
+          portfolioData?.investments?.[0]?.propertyId;
+  
+        if (!firstPropertyId) {
+          setRelatedProperties([]);
+          return;
         }
-      };
-
+  
+        const res = await axios.get(
+          `/api/properties/related/${firstPropertyId}`
+        );
+  
+        console.log("RELATED PROPERTIES RESPONSE =>", res.data);
+  
+        setRelatedProperties(
+          Array.isArray(res.data?.data)
+            ? res.data.data
+            : []
+        );
+  
+      } catch (err) {
+        console.error(
+          "RELATED PROPERTIES FETCH ERROR =>",
+          err
+        );
+  
+        setRelatedProperties([]);
+      }
+    };
+  
     fetchRelated();
   }, [portfolioData]);
 
